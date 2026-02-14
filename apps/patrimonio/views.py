@@ -583,6 +583,8 @@ class InventarioDetailView(LoginRequiredMixin, DetailView):
 
         ctx['itens'] = itens
         ctx['status_filter'] = status_filter
+        ctx['is_filtered_localizado'] = (status_filter == 'LOCALIZADO')
+        ctx['is_filtered_nao_localizado'] = (status_filter == 'NAO_LOCALIZADO')
         
         ctx['sobras'] = inv.sobras.all()
         ctx['localizados'] = inv.itens.filter(presenca='LOCALIZADO').count()

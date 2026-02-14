@@ -66,9 +66,9 @@
             <select name="status" onchange="this.form.submit()"
                 class="bg-transparent border-none text-slate-700 dark:text-white focus:ring-0 py-1 pl-2 pr-8 cursor-pointer">
                 <option value="">Todos os Itens</option>
-                <option value="LOCALIZADO" {% if status_filter=='LOCALIZADO' %}selected{% endif %}>Localizados</option>
-                <option value="NAO_LOCALIZADO" {% if status_filter=='NAO_LOCALIZADO' %}selected{% endif %}>Não
-                    Localizados</option>
+                <option value="LOCALIZADO" {% if is_filtered_localizado %}selected{% endif %}>Localizados</option>
+                <option value="NAO_LOCALIZADO" {% if is_filtered_nao_localizado %}selected{% endif %}>Não Localizados
+                </option>
             </select>
         </form>
     </div>
