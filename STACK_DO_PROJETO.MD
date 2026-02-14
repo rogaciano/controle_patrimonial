@@ -1417,3 +1417,6 @@ Antes de entregar cada funcionalidade, verificar:
 ---
 
 **Crie o sistema seguindo essas diretrizes. Priorize código limpo, consistente e bem documentado com type hints.**
+
+
+npx @vudovn/ag-kit init
