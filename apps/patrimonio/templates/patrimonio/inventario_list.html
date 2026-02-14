@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}Inventarios - Controle Patrimonial{% endblock %}
 
@@ -21,6 +22,20 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Filters -->
+    <div class="glass rounded-2xl p-4 mb-6 max-w-sm">
+        <form method="GET" class="flex items-end gap-3">
+            <div class="flex-1">
+                <label
+                    class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Status</label>
+                {% render_field filter.form.status class="form-input w-full text-sm" %}
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="btn-primary btn-sm">Filtrar</button>
+                <a href="{% url 'patrimonio:inventario-list' %}" class="btn-ghost-secondary btn-sm">Limpar</a>
+            </div>
+        </form>
+    </div>
     <div class="glass rounded-2xl overflow-hidden shadow-lg">
         <div class="overflow-x-auto">
             <table class="w-full">

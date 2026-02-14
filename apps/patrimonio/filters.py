@@ -24,26 +24,32 @@ class AtivoFilter(django_filters.FilterSet):
     categoria = django_filters.ModelChoiceFilter(
         queryset=CategoriaContabil.objects.filter(ativo=True),
         label='Categoria',
+        empty_label='Todos',
     )
     centro_custo = django_filters.ModelChoiceFilter(
         queryset=CentroCusto.objects.filter(ativo=True),
         label='Centro de Custo',
+        empty_label='Todos',
     )
     local_fisico = django_filters.ModelChoiceFilter(
         queryset=LocalFisico.objects.filter(ativo=True),
         label='Local Físico',
+        empty_label='Todos',
     )
     responsavel = django_filters.ModelChoiceFilter(
         queryset=Responsavel.objects.filter(ativo=True),
         label='Responsável',
+        empty_label='Todos',
     )
     status = django_filters.ChoiceFilter(
         choices=Ativo.Status.choices,
         label='Status',
+        null_label='Todos',
     )
     estado_conservacao = django_filters.ChoiceFilter(
         choices=Ativo.EstadoConservacao.choices,
         label='Estado de Conservação',
+        null_label='Todos',
     )
     depreciavel = django_filters.BooleanFilter(
         label='Depreciável',
@@ -75,6 +81,7 @@ class MovimentacaoFilter(django_filters.FilterSet):
     status = django_filters.ChoiceFilter(
         choices=Movimentacao.StatusMovimentacao.choices,
         label='Status',
+        null_label='Todos',
     )
     data_de = django_filters.DateFilter(
         field_name='data_movimentacao',
@@ -104,6 +111,7 @@ class InventarioFilter(django_filters.FilterSet):
     status = django_filters.ChoiceFilter(
         choices=Inventario.StatusInventario.choices,
         label='Status',
+        null_label='Todos',
     )
 
     class Meta:
