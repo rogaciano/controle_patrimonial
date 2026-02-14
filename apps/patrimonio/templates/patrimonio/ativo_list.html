@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Ativos - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Ativos Patrimoniais</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ page_obj.paginator.count|default:"0" }}
+                registro(s)</p>
+        </div>
+        <a href="{% url 'patrimonio:ativo-create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Ativo
+        </a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Filters -->
+    {% include 'patrimonio/partials/_ativo_filters.html' %}
+
+    <!-- Table -->
+    {% include 'patrimonio/partials/_ativo_table.html' %}
+
+    <!-- Pagination -->
+    {% include 'components/_pagination.html' %}
+</div>
+
+{% include 'components/_confirm_modal.html' %}
+{% endblock %}

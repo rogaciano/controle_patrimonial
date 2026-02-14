@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar-se - Controle Patrimonial{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="card max-w-md w-full">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Criar Conta</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Preencha os dados abaixo</p>
+        </div>
+
+        {% if form.errors %}
+        <div
+            class="border-l-4 border-red-500 bg-red-50/80 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl mb-6">
+            <ul class="text-sm list-disc list-inside">
+                {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'account_signup' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label for="id_email" class="form-label">E-mail <span class="text-red-500">*</span></label>
+                <input type="email" name="email" id="id_email" required value="{{ form.email.value|default:'' }}"
+                    class="form-input" placeholder="seu@email.com">
+            </div>
+
+            <div>
+                <label for="id_username" class="form-label">Nome de Usuário <span class="text-red-500">*</span></label>
+                <input type="text" name="username" id="id_username" required
+                    value="{{ form.username.value|default:'' }}" class="form-input" placeholder="seu.usuario">
+            </div>
+
+            <div>
+                <label for="id_password1" class="form-label">Senha <span class="text-red-500">*</span></label>
+                <input type="password" name="password1" id="id_password1" required class="form-input"
+                    placeholder="••••••••">
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">Mínimo 8 caracteres, não pode ser muito
+                    comum.</p>
+            </div>
+
+            <div>
+                <label for="id_password2" class="form-label">Confirmar Senha <span class="text-red-500">*</span></label>
+                <input type="password" name="password2" id="id_password2" required class="form-input"
+                    placeholder="••••••••">
+            </div>
+
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+
+            <button type="submit" class="btn-primary w-full justify-center">
+                Cadastrar-se
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Já tem conta?
+                <a href="{% url 'account_login' %}"
+                    class="text-primary-600 hover:text-primary-700 font-medium">Entrar</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

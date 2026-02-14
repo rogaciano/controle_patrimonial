@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Logout - Controle Patrimonial{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="card max-w-sm w-full text-center">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+        </div>
+        <h1 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Sair do Sistema</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Tem certeza que deseja sair?</p>
+        <form method="POST" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-danger w-full justify-center mb-3">Sair</button>
+        </form>
+        <a href="{% url 'patrimonio:dashboard' %}" class="btn-ghost-secondary w-full justify-center">Cancelar</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar - Controle Patrimonial{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="card max-w-md w-full">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 rounded-2xl bg-primary-600 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Controle Patrimonial</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Faça login para acessar o sistema</p>
+        </div>
+
+        {% if form.errors %}
+        <div
+            class="border-l-4 border-red-500 bg-red-50/80 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl mb-6">
+            <p class="text-sm">Usuário ou senha incorretos. Tente novamente.</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'account_login' %}" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label for="id_login" class="form-label">Usuário ou E-mail</label>
+                <input type="text" name="login" id="id_login" required autofocus class="form-input"
+                    placeholder="seu.usuario">
+            </div>
+
+            <div>
+                <label for="id_password" class="form-label">Senha</label>
+                <input type="password" name="password" id="id_password" required class="form-input"
+                    placeholder="••••••••">
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" name="remember"
+                        class="rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">Lembrar-me</span>
+                </label>
+            </div>
+
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+
+            <button type="submit" class="btn-primary w-full justify-center">
+                Entrar
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+                Não tem conta?
+                <a href="{% url 'account_signup' %}"
+                    class="text-primary-600 hover:text-primary-700 font-medium">Cadastre-se</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

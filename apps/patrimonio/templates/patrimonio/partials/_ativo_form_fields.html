@@ -1,0 +1,141 @@
+{% load widget_tweaks %}
+
+<!-- Ativo Form Fields Partial -->
+<div class="space-y-6">
+    <!-- Identificação -->
+    <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Identificação
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">Nº Tombamento <span class="text-red-500">*</span></label>
+                {% render_field form.numero_tombamento class="form-input" placeholder="Ex: TOMB00001" %}
+                {% for error in form.numero_tombamento.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Categoria <span class="text-red-500">*</span></label>
+                {% render_field form.categoria class="form-input" %}
+                {% for error in form.categoria.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Descrição -->
+    <div>
+        <label class="form-label">Descrição Detalhada <span class="text-red-500">*</span></label>
+        {% render_field form.descricao_detalhada class="form-input" rows="3" placeholder="Descreva o ativo em
+        detalhes..." %}
+        {% for error in form.descricao_detalhada.errors %}
+        <p class="form-error">{{ error }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Localização e Responsabilidade -->
+    <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Localização e
+            Responsável</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="form-label">Centro de Custo <span class="text-red-500">*</span></label>
+                {% render_field form.centro_custo class="form-input" %}
+                {% for error in form.centro_custo.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Local Físico <span class="text-red-500">*</span></label>
+                {% render_field form.local_fisico class="form-input" %}
+                {% for error in form.local_fisico.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Responsável <span class="text-red-500">*</span></label>
+                {% render_field form.responsavel class="form-input" %}
+                {% for error in form.responsavel.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Valores e Datas -->
+    <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Valores e
+            Depreciação</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="form-label">Valor Aquisição <span class="text-red-500">*</span></label>
+                {% render_field form.valor_aquisicao class="form-input" placeholder="0,00" %}
+                {% for error in form.valor_aquisicao.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Valor Residual</label>
+                {% render_field form.valor_residual class="form-input" placeholder="0,00" %}
+                {% for error in form.valor_residual.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Vida Útil (meses)</label>
+                {% render_field form.vida_util_meses class="form-input" placeholder="60" %}
+                {% for error in form.vida_util_meses.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <div>
+                <label class="form-label">Data Aquisição <span class="text-red-500">*</span></label>
+                {% render_field form.data_aquisicao class="form-input" type="date" %}
+                {% for error in form.data_aquisicao.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Status e Conservação -->
+    <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Estado</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="form-label">Status</label>
+                {% render_field form.status class="form-input" %}
+            </div>
+            <div>
+                <label class="form-label">Estado de Conservação</label>
+                {% render_field form.estado_conservacao class="form-input" %}
+            </div>
+            <div class="flex items-end pb-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer">
+                    {{ form.depreciavel }}
+                    <span class="text-sm text-slate-700 dark:text-slate-300">Depreciável</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nota Fiscal e Fornecedor -->
+    <div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Aquisição</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">Nota Fiscal</label>
+                {% render_field form.nota_fiscal class="form-input" placeholder="Número da NF" %}
+            </div>
+            <div>
+                <label class="form-label">Fornecedor</label>
+                {% render_field form.fornecedor class="form-input" placeholder="Nome do fornecedor" %}
+            </div>
+        </div>
+        <div class="mt-4">
+            <label class="form-label">Observações</label>
+            {% render_field form.observacoes class="form-input" rows="2" placeholder="Observações adicionais..." %}
+        </div>
+    </div>
+</div>

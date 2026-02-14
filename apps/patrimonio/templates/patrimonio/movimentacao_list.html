@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimentações - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Movimentações</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ object_list|length }} registro(s)</p>
+        </div>
+        <a href="{% url 'patrimonio:movimentacao-create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Nova Movimentação
+        </a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="glass rounded-2xl overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Ativo</th>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50 hidden md:table-cell">
+                            Origem → Destino</th>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50 hidden lg:table-cell">
+                            Data</th>
+                        <th
+                            class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Status</th>
+                        <th
+                            class="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in object_list %}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-4 text-sm border-t border-slate-100 dark:border-slate-800">
+                            <span class="font-mono font-semibold text-primary-600 dark:text-primary-400">{{
+                                mov.ativo.numero_tombamento }}</span>
+                            <br><span class="text-xs text-slate-500">{{ mov.ativo.descricao_detalhada|truncatewords:8
+                                }}</span>
+                        </td>
+                        <td
+                            class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 hidden md:table-cell">
+                            {{ mov.local_origem.sala|default:"—" }} → {{ mov.local_destino.sala|default:"—" }}
+                        </td>
+                        <td
+                            class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 hidden lg:table-cell">
+                            {{ mov.data_movimentacao|date:"d/m/Y" }}
+                        </td>
+                        <td class="px-6 py-4 text-center border-t border-slate-100 dark:border-slate-800">
+                            {% if mov.status == 'SOLICITADA' %}
+                            <span class="badge-warning">Solicitada</span>
+                            {% elif mov.status == 'APROVADA' %}
+                            <span class="badge-info">Aprovada</span>
+                            {% elif mov.status == 'CONCLUIDA' %}
+                            <span class="badge-success">Concluída</span>
+                            {% elif mov.status == 'CANCELADA' %}
+                            <span class="badge-danger">Cancelada</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right border-t border-slate-100 dark:border-slate-800">
+                            <div class="flex items-center justify-end gap-1">
+                                {% if mov.status == 'SOLICITADA' %}
+                                <form method="POST" action="{% url 'patrimonio:movimentacao-aprovar' mov.pk %}"
+                                    class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-ghost-primary btn-sm" title="Aprovar">✓
+                                        Aprovar</button>
+                                </form>
+                                <form method="POST" action="{% url 'patrimonio:movimentacao-cancelar' mov.pk %}"
+                                    class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-500 hover:text-red-700 text-xs px-2 py-1"
+                                        title="Cancelar">✕</button>
+                                </form>
+                                {% elif mov.status == 'APROVADA' %}
+                                <form method="POST" action="{% url 'patrimonio:movimentacao-concluir' mov.pk %}"
+                                    class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-primary btn-sm" title="Concluir">Concluir</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <p class="font-medium">Nenhuma movimentação registrada</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'components/_pagination.html' %}
+</div>
+{% endblock %}

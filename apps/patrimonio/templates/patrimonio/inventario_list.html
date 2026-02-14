@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventarios - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Inventarios</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ object_list|length }} registro(s)</p>
+        </div>
+        <a href="{% url 'patrimonio:inventario-create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Inventario
+        </a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="glass rounded-2xl overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Codigo</th>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Responsavel</th>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50 hidden md:table-cell">
+                            Periodo</th>
+                        <th
+                            class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Status</th>
+                        <th
+                            class="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
+                            Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in object_list %}
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                        <td
+                            class="px-6 py-4 text-sm font-mono font-semibold text-primary-600 dark:text-primary-400 border-t border-slate-100 dark:border-slate-800">
+                            {{ inv.codigo }}
+                        </td>
+                        <td
+                            class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800">
+                            {{ inv.responsavel.nome }}
+                        </td>
+                        <td
+                            class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 hidden md:table-cell">
+                            {{ inv.data_inicio|date:"d/m/Y" }}
+                            {% if inv.data_fim %} &mdash; {{ inv.data_fim|date:"d/m/Y" }}{% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center border-t border-slate-100 dark:border-slate-800">
+                            {% if inv.status == 'ABERTO' %}
+                            <span class="badge-warning">Aberto</span>
+                            {% elif inv.status == 'EM_ANDAMENTO' %}
+                            <span class="badge-info">Em Andamento</span>
+                            {% elif inv.status == 'CONCLUIDO' %}
+                            <span class="badge-success">Concluido</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right border-t border-slate-100 dark:border-slate-800">
+                            <a href="{% url 'patrimonio:inventario-detail' inv.pk %}"
+                                class="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                                title="Visualizar">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                            <p class="font-medium">Nenhum inventario encontrado</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'components/_pagination.html' %}
+</div>
+{% endblock %}

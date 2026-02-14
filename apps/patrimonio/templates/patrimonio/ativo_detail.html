@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Ativo {{ ativo.numero_tombamento }} - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ ativo.numero_tombamento }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ ativo.descricao_detalhada|truncatewords:15
+                }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'patrimonio:ativo-update' ativo.pk %}" class="btn-secondary btn-sm">Editar</a>
+            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary btn-sm">← Lista</a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Info Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Main Info -->
+        <div class="lg:col-span-2 card">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Informações
+                Gerais</h3>
+            <dl class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Tombamento</dt>
+                    <dd class="font-mono font-semibold text-primary-600 dark:text-primary-400 mt-1">{{
+                        ativo.numero_tombamento }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Categoria</dt>
+                    <dd class="mt-1">{{ ativo.categoria.nome }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Centro de Custo</dt>
+                    <dd class="mt-1">{{ ativo.centro_custo }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Local</dt>
+                    <dd class="mt-1">{{ ativo.local_fisico }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Responsável</dt>
+                    <dd class="mt-1">{{ ativo.responsavel.nome }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Status</dt>
+                    <dd class="mt-1">
+                        {% if ativo.status == 'ATIVO' %}<span class="badge-success">Ativo</span>
+                        {% elif ativo.status == 'EM_MANUTENCAO' %}<span class="badge-warning">Manutenção</span>
+                        {% elif ativo.status == 'BAIXADO' %}<span class="badge-danger">Baixado</span>
+                        {% elif ativo.status == 'CEDIDO' %}<span class="badge-info">Cedido</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div class="col-span-2">
+                    <dt class="text-slate-500 dark:text-slate-400">Descrição</dt>
+                    <dd class="mt-1">{{ ativo.descricao_detalhada }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Financial Info -->
+        <div class="card">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Valores</h3>
+            <dl class="space-y-3 text-sm">
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Valor Aquisição</dt>
+                    <dd class="text-lg font-bold text-slate-900 dark:text-white mt-1">R$ {{
+                        ativo.valor_aquisicao|floatformat:2 }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Valor Residual</dt>
+                    <dd class="mt-1">R$ {{ ativo.valor_residual|floatformat:2|default:"0,00" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Vida Útil</dt>
+                    <dd class="mt-1">{{ ativo.vida_util_meses|default:"—" }} meses</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Depreciável</dt>
+                    <dd class="mt-1">{{ ativo.depreciavel|yesno:"Sim,Não" }}</dd>
+                </div>
+                <hr class="border-slate-200 dark:border-slate-700">
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Data Aquisição</dt>
+                    <dd class="mt-1">{{ ativo.data_aquisicao|date:"d/m/Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-500 dark:text-slate-400">Nota Fiscal</dt>
+                    <dd class="mt-1">{{ ativo.nota_fiscal|default:"—" }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Inventory History -->
+    {% if inventario_itens %}
+    <div class="card mb-6">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Histórico de
+            Inventários</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Data
+                        </th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Inventário</th>
+                        <th class="text-center text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Presença</th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Estado
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventario_itens %}
+                    <tr class="border-t border-slate-100 dark:border-slate-800">
+                        <td class="px-3 py-2">{{ item.inventario.data_inicio|date:"d/m/Y" }}</td>
+                        <td class="px-3 py-2">
+                            <a href="{% url 'patrimonio:inventario-detail' item.inventario.pk %}"
+                                class="hover:underline text-primary-600">
+                                {{ item.inventario.codigo }}
+                            </a>
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            {% if item.presenca == 'LOCALIZADO' %}
+                            <span class="badge-success">Localizado</span>
+                            {% else %}
+                            <span class="badge-danger">Não Localizado</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2">{{ item.get_estado_conservacao_encontrado_display|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Depreciation History -->
+    {% if depreciacoes %}
+    <div class="card mb-6">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Histórico de
+            Depreciação (últimos 12 meses)</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Período
+                        </th>
+                        <th class="text-right text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Depreciação Mês</th>
+                        <th class="text-right text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Acumulada</th>
+                        <th class="text-right text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Valor
+                            Contábil</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in depreciacoes %}
+                    <tr class="border-t border-slate-100 dark:border-slate-800">
+                        <td class="px-3 py-2">{{ d.mes_referencia|stringformat:"02d" }}/{{ d.ano_referencia }}</td>
+                        <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ {{
+                            d.valor_depreciado_mes|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right">R$ {{ d.depreciacao_acumulada|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right font-medium">R$ {{ d.valor_contabil_atual|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Movement History -->
+    {% if movimentacoes %}
+    <div class="card">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Últimas
+            Movimentações</h3>
+        <div class="space-y-3">
+            {% for mov in movimentacoes %}
+            <div class="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                <div
+                    class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">
+                        {{ mov.local_origem.sala|default:"—" }} → {{ mov.local_destino.sala|default:"—" }}
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ mov.data_movimentacao|date:"d/m/Y" }} · {{
+                        mov.motivo|truncatewords:10 }}</p>
+                </div>
+                <span
+                    class="{% if mov.status == 'CONCLUIDA' %}badge-success{% elif mov.status == 'CANCELADA' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ mov.get_status_display }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

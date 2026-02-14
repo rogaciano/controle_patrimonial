@@ -1,0 +1,58 @@
+"""URLs do módulo Patrimônio."""
+
+from django.urls import path
+
+from . import views
+
+app_name = 'patrimonio'
+
+urlpatterns = [
+    # --- Dashboard ---
+    path('', views.DashboardView.as_view(), name='dashboard'),
+
+    # --- Ativos ---
+    path('ativos/', views.AtivoListView.as_view(), name='ativo-list'),
+    path('ativos/novo/', views.AtivoCreateView.as_view(), name='ativo-create'),
+    path('ativos/<int:pk>/', views.AtivoDetailView.as_view(), name='ativo-detail'),
+    path('ativos/<int:pk>/editar/', views.AtivoUpdateView.as_view(), name='ativo-update'),
+    path('ativos/<int:pk>/excluir/', views.AtivoDeleteView.as_view(), name='ativo-delete'),
+
+    # --- Categorias ---
+    path('categorias/', views.CategoriaListView.as_view(), name='categoria-list'),
+    path('categorias/novo/', views.CategoriaCreateView.as_view(), name='categoria-create'),
+    path('categorias/<int:pk>/', views.CategoriaDetailView.as_view(), name='categoria-detail'),
+    path('categorias/<int:pk>/editar/', views.CategoriaUpdateView.as_view(), name='categoria-update'),
+
+    # --- Centros de Custo ---
+    path('centros-custo/', views.CentroCustoListView.as_view(), name='centrocusto-list'),
+    path('centros-custo/novo/', views.CentroCustoCreateView.as_view(), name='centrocusto-create'),
+    path('centros-custo/<int:pk>/editar/', views.CentroCustoUpdateView.as_view(), name='centrocusto-update'),
+
+    # --- Locais Físicos ---
+    path('locais/', views.LocalFisicoListView.as_view(), name='localfisico-list'),
+    path('locais/novo/', views.LocalFisicoCreateView.as_view(), name='localfisico-create'),
+    path('locais/<int:pk>/editar/', views.LocalFisicoUpdateView.as_view(), name='localfisico-update'),
+
+    # --- Responsáveis ---
+    path('responsaveis/', views.ResponsavelListView.as_view(), name='responsavel-list'),
+    path('responsaveis/novo/', views.ResponsavelCreateView.as_view(), name='responsavel-create'),
+    path('responsaveis/<int:pk>/editar/', views.ResponsavelUpdateView.as_view(), name='responsavel-update'),
+
+    # --- Movimentações ---
+    path('movimentacoes/', views.MovimentacaoListView.as_view(), name='movimentacao-list'),
+    path('movimentacoes/novo/', views.MovimentacaoCreateView.as_view(), name='movimentacao-create'),
+    path('movimentacoes/<int:pk>/aprovar/', views.MovimentacaoAprovarView.as_view(), name='movimentacao-aprovar'),
+    path('movimentacoes/<int:pk>/concluir/', views.MovimentacaoConcluirView.as_view(), name='movimentacao-concluir'),
+    path('movimentacoes/<int:pk>/cancelar/', views.MovimentacaoCancelarView.as_view(), name='movimentacao-cancelar'),
+
+    # --- Inventários ---
+    path('inventarios/', views.InventarioListView.as_view(), name='inventario-list'),
+    path('inventarios/novo/', views.InventarioCreateView.as_view(), name='inventario-create'),
+    path('inventarios/<int:pk>/', views.InventarioDetailView.as_view(), name='inventario-detail'),
+    path('inventarios/<int:pk>/gerar-snapshot/', views.InventarioGerarSnapshotView.as_view(), name='inventario-gerar-snapshot'),
+    path('inventarios/item/<int:pk>/toggle/', views.InventarioItemToggleView.as_view(), name='inventario-item-toggle'),
+    path('inventarios/<int:pk>/finalizar/', views.InventarioFinalizarView.as_view(), name='inventario-finalizar'),
+
+    # --- Depreciação ---
+    path('depreciacao/processar/', views.ProcessarDepreciacaoView.as_view(), name='depreciacao-processar'),
+]

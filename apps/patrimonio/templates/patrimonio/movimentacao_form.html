@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Nova Movimentação - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Nova Movimentação</h2>
+        <a href="{% url 'patrimonio:movimentacao-list' %}" class="btn-ghost-secondary">← Voltar</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <form method="POST" class="card">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div
+            class="border-l-4 border-red-500 bg-red-50/80 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl mb-6">
+            <p class="font-semibold">Corrija os erros abaixo:</p>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                {% for field, errors in form.errors.items %}
+                {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="space-y-4">
+            <div>
+                <label class="form-label">Ativo <span class="text-red-500">*</span></label>
+                {% render_field form.ativo class="form-input" %}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label">Local Destino <span class="text-red-500">*</span></label>
+                    {% render_field form.local_destino class="form-input" %}
+                </div>
+                <div>
+                    <label class="form-label">Novo Responsável <span class="text-red-500">*</span></label>
+                    {% render_field form.responsavel_novo class="form-input" %}
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Data <span class="text-red-500">*</span></label>
+                {% render_field form.data_movimentacao class="form-input" type="date" %}
+            </div>
+            <div>
+                <label class="form-label">Motivo <span class="text-red-500">*</span></label>
+                {% render_field form.motivo class="form-input" rows="3" placeholder="Descreva o motivo..." %}
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <a href="{% url 'patrimonio:movimentacao-list' %}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Solicitar Movimentação
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

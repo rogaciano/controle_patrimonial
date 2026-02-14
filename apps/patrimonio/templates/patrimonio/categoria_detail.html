@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Categoria {{ categoria.nome }} - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ categoria.nome }}</h2>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'patrimonio:categoria-update' categoria.pk %}" class="btn-secondary btn-sm">Editar</a>
+            <a href="{% url 'patrimonio:categoria-list' %}" class="btn-ghost-secondary btn-sm">← Lista</a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="card">
+        <dl class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Código</dt>
+                <dd class="font-mono font-semibold mt-1">{{ categoria.codigo }}</dd>
+            </div>
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Nome</dt>
+                <dd class="mt-1">{{ categoria.nome }}</dd>
+            </div>
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Conta Contábil</dt>
+                <dd class="mt-1">{{ categoria.conta_contabil|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Taxa Depreciação</dt>
+                <dd class="mt-1">{{ categoria.taxa_depreciacao_anual|floatformat:2|default:"—" }}%</dd>
+            </div>
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Vida Útil Padrão</dt>
+                <dd class="mt-1">{{ categoria.vida_util_padrao_meses|default:"—" }} meses</dd>
+            </div>
+            <div>
+                <dt class="text-slate-500 dark:text-slate-400">Categoria Pai</dt>
+                <dd class="mt-1">{{ categoria.parent.nome|default:"Nenhuma" }}</dd>
+            </div>
+        </dl>
+    </div>
+</div>
+{% endblock %}

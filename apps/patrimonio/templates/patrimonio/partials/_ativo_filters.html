@@ -1,0 +1,23 @@
+<!-- Ativo Filters Partial -->
+{% load widget_tweaks %}
+<div class="glass rounded-2xl p-4 mb-6">
+    <form method="GET" action="{% url 'patrimonio:ativo-list' %}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div>
+            <input type="text" name="busca" value="{{ request.GET.busca }}" placeholder="Tombamento, descrição..."
+                class="form-input w-full text-sm">
+        </div>
+        <div>
+            {% render_field filter.form.categoria class="form-input w-full text-sm" %}
+        </div>
+        <div>
+            {% render_field filter.form.status class="form-input w-full text-sm" %}
+        </div>
+        <div>
+            {% render_field filter.form.local_fisico class="form-input w-full text-sm" %}
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="btn-primary btn-sm">Filtrar</button>
+            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary btn-sm">Limpar</a>
+        </div>
+    </form>
+</div>

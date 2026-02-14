@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Processar Depreciação - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Processar Depreciação em Lote</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Cálculo mensal de depreciação linear para todos
+                os ativos</p>
+        </div>
+        <a href="{% url 'patrimonio:dashboard' %}" class="btn-ghost-secondary">← Dashboard</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <form method="POST" class="card">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="form-label">Ano</label>
+                <input type="number" name="ano" value="{{ ano }}" min="2020" max="2030" class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Mês</label>
+                <input type="number" name="mes" value="{{ mes }}" min="1" max="12" class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Cenário</label>
+                <select name="cenario" class="form-input">
+                    <option value="FISCAL">Fiscal</option>
+                    <option value="SOCIETARIO">Societário</option>
+                </select>
+            </div>
+        </div>
+
+        <div
+            class="border-l-4 border-blue-500 bg-blue-50/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 p-4 rounded-xl mb-6">
+            <p class="text-sm">
+                <strong>Atenção:</strong> Esta ação irá calcular e registrar a depreciação mensal para todos os ativos
+                depreciáveis com status ATIVO. Registros já existentes para o mesmo período não serão duplicados.
+            </p>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Processar Depreciação
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

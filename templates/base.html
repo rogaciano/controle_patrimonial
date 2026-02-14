@@ -1,0 +1,120 @@
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Controle Patrimonial{% endblock %}</title>
+
+    <!-- Dark Mode (flicker-free) -->
+    <script>
+        if (localStorage.getItem('dark-mode') === 'true' ||
+            (!('dark-mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:300,400,500,600,700,800&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind via CDN (dev fallback) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Figtree', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
+                            300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9',
+                            600: '#0284c7', 700: '#0369a1', 800: '#075985',
+                            900: '#0c4a6e', 950: '#082f49',
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer components {
+            .btn-primary {
+                @apply bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 inline-flex items-center gap-1.5;
+            }
+            .btn-secondary {
+                @apply bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 rounded-lg px-4 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+            }
+            .btn-danger {
+                @apply bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+            }
+            .btn-ghost-primary {
+                @apply text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg px-3 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+            }
+            .btn-ghost-secondary {
+                @apply text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg px-3 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+            }
+            .btn-sm { @apply text-xs px-2.5 py-1.5; }
+            .form-input {
+                @apply block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm;
+            }
+            .form-label { @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1; }
+            .form-error { @apply mt-1 text-sm text-red-600; }
+            .card { @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-lg; }
+            .glass { @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60; }
+            .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+            .badge-success { @apply badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400; }
+            .badge-warning { @apply badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400; }
+            .badge-danger { @apply badge bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400; }
+            .badge-info { @apply badge bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="font-sans antialiased text-slate-900 dark:text-slate-100
+             bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+
+    <div class="min-h-screen">
+        {% include 'includes/_navigation.html' %}
+
+        {% block header %}{% endblock %}
+
+        <!-- Flash Messages -->
+        <div class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8">
+            {% if messages %}
+                {% for message in messages %}
+                    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+                         x-transition:leave="transition ease-in duration-300"
+                         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                         class="border-l-4
+                        {% if message.tags == 'success' %}border-green-500 bg-green-50/80 dark:bg-green-900/20 text-green-700 dark:text-green-400
+                        {% elif message.tags == 'error' %}border-red-500 bg-red-50/80 dark:bg-red-900/20 text-red-700 dark:text-red-400
+                        {% elif message.tags == 'warning' %}border-yellow-500 bg-yellow-50/80 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400
+                        {% else %}border-blue-500 bg-blue-50/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400
+                        {% endif %}
+                        p-4 rounded-xl mb-3 backdrop-blur-sm" role="alert">
+                        <div class="flex items-center justify-between">
+                            <span>{{ message }}</span>
+                            <button @click="show = false" class="ml-4 opacity-50 hover:opacity-100">✕</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Alpine.js via CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.agent/
+
+# Node
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Test output
+test_output.txt
