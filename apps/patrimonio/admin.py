@@ -4,6 +4,7 @@ from django.contrib import admin
 
 from .models import (
     Ativo,
+    AtivoImagem,
     CategoriaContabil,
     CentroCusto,
     DepreciacaoRegistro,
@@ -61,6 +62,14 @@ class InventarioSobraInline(admin.TabularInline):
     extra = 0
 
 
+class AtivoImagemInline(admin.TabularInline):
+    model = AtivoImagem
+    extra = 1
+    fields = ['imagem', 'descricao', 'tipo', 'principal', 'registrado_por', 'criado_em']
+    readonly_fields = ['criado_em']
+    raw_id_fields = ['registrado_por']
+
+
 # =============================================================================
 # MODEL ADMINS
 # =============================================================================
@@ -107,7 +116,7 @@ class AtivoAdmin(admin.ModelAdmin):
     search_fields = ['numero_tombamento', 'descricao_detalhada', 'nota_fiscal']
     raw_id_fields = ['categoria', 'centro_custo', 'local_fisico', 'responsavel']
     readonly_fields = ['criado_em', 'atualizado_em']
-    inlines = [DepreciacaoRegistroInline, MovimentacaoInline]
+    inlines = [AtivoImagemInline, DepreciacaoRegistroInline, MovimentacaoInline]
     fieldsets = (
         ('Identificação', {
             'fields': ('numero_tombamento', 'descricao_detalhada', 'foto'),

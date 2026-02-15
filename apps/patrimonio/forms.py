@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 
 from .models import (
     Ativo,
+    AtivoImagem,
     CategoriaContabil,
     CentroCusto,
     Inventario,
@@ -198,3 +199,14 @@ class InventarioSobraForm(_BaseForm):
     class Meta:
         model = InventarioSobra
         fields = ['descricao_item', 'local_encontrado', 'foto', 'observacoes']
+
+
+# =============================================================================
+# GALERIA DE IMAGENS DO ATIVO
+# =============================================================================
+
+
+class AtivoImagemForm(_BaseForm):
+    class Meta:
+        model = AtivoImagem
+        fields = ['imagem', 'descricao', 'tipo', 'principal']

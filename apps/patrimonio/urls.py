@@ -17,6 +17,11 @@ urlpatterns = [
     path('ativos/<int:pk>/editar/', views.AtivoUpdateView.as_view(), name='ativo-update'),
     path('ativos/<int:pk>/excluir/', views.AtivoDeleteView.as_view(), name='ativo-delete'),
 
+    # --- Galeria de Imagens ---
+    path('ativos/<int:pk>/imagens/adicionar/', views.AtivoImagemCreateView.as_view(), name='ativo-imagem-create'),
+    path('ativos/imagens/<int:pk>/excluir/', views.AtivoImagemDeleteView.as_view(), name='ativo-imagem-delete'),
+    path('ativos/imagens/<int:pk>/principal/', views.AtivoImagemTogglePrincipalView.as_view(), name='ativo-imagem-principal'),
+
     # --- Categorias ---
     path('categorias/', views.CategoriaListView.as_view(), name='categoria-list'),
     path('categorias/novo/', views.CategoriaCreateView.as_view(), name='categoria-create'),

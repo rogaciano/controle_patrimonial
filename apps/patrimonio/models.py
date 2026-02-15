@@ -2,8 +2,8 @@
 Models do módulo Patrimônio.
 
 Entidades: CategoriaContabil, CentroCusto, LocalFisico, Responsavel,
-Ativo, Movimentacao, DepreciacaoRegistro, Inventario, InventarioItem,
-InventarioItemEvidencia, InventarioSobra, MotivoBaixa.
+Ativo, AtivoImagem, Movimentacao, DepreciacaoRegistro, Inventario,
+InventarioItem, InventarioItemEvidencia, InventarioSobra, MotivoBaixa.
 """
 
 from decimal import Decimal
@@ -388,6 +388,78 @@ class Ativo(BaseModel):
             return self.filter(responsavel_id=responsavel_id)
 
     objects = AtivoQuerySet.as_manager()
+
+
+# =============================================================================
+# GALERIA DE IMAGENS DO ATIVO
+# =============================================================================
+
+
+class AtivoImagem(models.Model):
+    """Imagem da galeria de um ativo patrimonial."""
+
+    class TipoImagem(models.TextChoices):
+        AQUISICAO = 'AQUISICAO', 'Aquisição'
+        INVENTARIO = 'INVENTARIO', 'Inventário'
+        MANUTENCAO = 'MANUTENCAO', 'Manutenção'
+        DANO = 'DANO', 'Dano'
+        OUTRO = 'OUTRO', 'Outro'
+
+    ativo = models.ForeignKey(
+        Ativo,
+        on_delete=models.CASCADE,
+        related_name='imagens',
+        verbose_name='Ativo',
+    )
+    imagem = models.ImageField(
+        upload_to='ativos/galeria/',
+        verbose_name='Imagem',
+    )
+    descricao = models.CharField(
+        max_length=200,
+        blank=True,
+        default='',
+        verbose_name='Descrição',
+        help_text='Ex: Vista frontal, Número de série, Dano lateral',
+    )
+    tipo = models.CharField(
+        max_length=15,
+        choices=TipoImagem.choices,
+        default=TipoImagem.OUTRO,
+        verbose_name='Tipo',
+    )
+    principal = models.BooleanField(
+        default=False,
+        verbose_name='Foto Principal',
+        help_text='Marque para exibir esta imagem em destaque na ficha do ativo.',
+    )
+    registrado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='imagens_patrimonio',
+        verbose_name='Registrado por',
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-principal', '-criado_em']
+        verbose_name = 'Imagem do Ativo'
+        verbose_name_plural = 'Imagens do Ativo'
+
+    def __str__(self) -> str:
+        label = self.descricao or self.get_tipo_display()
+        star = ' ⭐' if self.principal else ''
+        return f'{self.ativo.numero_tombamento} - {label}{star}'
+
+    def save(self, *args, **kwargs) -> None:
+        # Auto-unmark: garante que apenas UMA imagem seja principal por ativo
+        if self.principal:
+            AtivoImagem.objects.filter(
+                ativo=self.ativo, principal=True,
+            ).exclude(pk=self.pk).update(principal=False)
+        super().save(*args, **kwargs)
 
 
 # =============================================================================
@@ -799,3 +871,4 @@ auditlog.register(Ativo)
 auditlog.register(Movimentacao)
 auditlog.register(Inventario)
 auditlog.register(MotivoBaixa)
+auditlog.register(AtivoImagem)

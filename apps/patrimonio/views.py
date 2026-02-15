@@ -32,6 +32,7 @@ from django_filters.views import FilterView
 from .filters import AtivoFilter, InventarioFilter, MovimentacaoFilter
 from .forms import (
     AtivoForm,
+    AtivoImagemForm,
     CategoriaContabilForm,
     CentroCustoForm,
     InventarioForm,
@@ -42,6 +43,7 @@ from .forms import (
 )
 from .models import (
     Ativo,
+    AtivoImagem,
     CategoriaContabil,
     CentroCusto,
     DepreciacaoRegistro,
@@ -238,6 +240,10 @@ class AtivoDetailView(LoginRequiredMixin, DetailView):
             'inventario', 'inventario__responsavel'
         ).order_by('-inventario__data_inicio')
         ctx['baixa_form'] = MotivoBaixaForm()
+        # Galeria de imagens
+        ctx['imagens'] = ativo.imagens.all()
+        ctx['foto_principal'] = ativo.imagens.filter(principal=True).first()
+        ctx['imagem_form'] = AtivoImagemForm()
         return ctx
 
 
@@ -262,6 +268,57 @@ class AtivoDeleteView(LoginRequiredMixin, DeleteView):
         self.object.soft_delete()
         messages.success(request, 'Ativo removido com sucesso.')
         return redirect(self.success_url)
+
+
+# =============================================================================
+# GALERIA DE IMAGENS DO ATIVO
+# =============================================================================
+
+
+class AtivoImagemCreateView(LoginRequiredMixin, CreateView):
+    """Upload de imagem para a galeria do ativo."""
+
+    model = AtivoImagem
+    form_class = AtivoImagemForm
+
+    def form_valid(self, form):
+        ativo = get_object_or_404(Ativo, pk=self.kwargs['pk'])
+        img = form.save(commit=False)
+        img.ativo = ativo
+        img.registrado_por = self.request.user
+        img.save()
+        messages.success(self.request, 'Imagem adicionada com sucesso!')
+        return redirect('patrimonio:ativo-detail', pk=ativo.pk)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Erro ao enviar imagem. Verifique os campos.')
+        return redirect('patrimonio:ativo-detail', pk=self.kwargs['pk'])
+
+
+class AtivoImagemDeleteView(LoginRequiredMixin, View):
+    """Exclusão de imagem da galeria."""
+
+    def post(self, request, pk):
+        img = get_object_or_404(AtivoImagem, pk=pk)
+        ativo_pk = img.ativo.pk
+        img.imagem.delete(save=False)
+        img.delete()
+        messages.success(request, 'Imagem removida com sucesso.')
+        return redirect('patrimonio:ativo-detail', pk=ativo_pk)
+
+
+class AtivoImagemTogglePrincipalView(LoginRequiredMixin, View):
+    """Marcar/desmarcar imagem como principal."""
+
+    def post(self, request, pk):
+        img = get_object_or_404(AtivoImagem, pk=pk)
+        img.principal = not img.principal
+        img.save()  # auto-unmark lógica está no model.save()
+        if img.principal:
+            messages.success(request, 'Imagem definida como principal.')
+        else:
+            messages.info(request, 'Imagem desmarcada como principal.')
+        return redirect('patrimonio:ativo-detail', pk=img.ativo.pk)
 
 
 # =============================================================================

@@ -99,6 +99,32 @@
         </div>
     </div>
 
+    <!-- Foto Principal em Destaque -->
+    {% if foto_principal %}
+    <div class="card mb-6">
+        <div class="flex items-center gap-4">
+            <div class="flex-shrink-0">
+                <img src="{{ foto_principal.imagem.url }}" alt="{{ foto_principal.descricao|default:'Foto principal' }}"
+                    class="w-48 h-36 object-cover rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+            </div>
+            <div>
+                <p class="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
+                    ⭐ Foto Principal
+                </p>
+                {% if foto_principal.descricao %}
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ foto_principal.descricao }}</p>
+                {% endif %}
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    {{ foto_principal.get_tipo_display }} · {{ foto_principal.criado_em|date:"d/m/Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Galeria de Imagens -->
+    {% include 'patrimonio/partials/_galeria_imagens.html' %}
+
     <!-- Inventory History -->
     {% if inventario_itens %}
     <div class="card mb-6">
