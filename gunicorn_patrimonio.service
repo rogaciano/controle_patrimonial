@@ -1,0 +1,16 @@
+[Unit]
+Description=gunicorn daemon for patrimonio
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/var/www/controle_patrimonial
+ExecStart=/var/www/controle_patrimonial/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind 0.0.0.0:8011 \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
