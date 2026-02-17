@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'django-insecure-change-me-in-production-patrimonial-2026'
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'localhost', '127.0.0.1']
 
