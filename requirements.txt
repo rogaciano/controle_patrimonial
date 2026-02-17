@@ -1,0 +1,7 @@
+django
+django-allauth
+django-auditlog
+django-filter
+django-widget-tweaks
+django-vite
+gunicorn
