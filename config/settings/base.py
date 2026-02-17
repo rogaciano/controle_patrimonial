@@ -11,7 +11,7 @@ SECRET_KEY = 'django-insecure-change-me-in-production-patrimonial-2026'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'localhost', '127.0.0.1']
 
 # --- Apps ---
 INSTALLED_APPS = [
