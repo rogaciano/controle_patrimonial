@@ -5,3 +5,4 @@ django-filter
 django-widget-tweaks
 django-vite
 gunicorn
+Pillow
