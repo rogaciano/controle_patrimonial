@@ -1,8 +1,8 @@
-/* Importar tokens ANTES do Tailwind */
-@import './tokens.css';
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "./tokens.css";
+@config "../../tailwind.config.js";
+/* source "../../*.html"; */
+
 
 /* ========================================
    COMPONENTES UTILITÁRIOS
