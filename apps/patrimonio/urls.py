@@ -15,7 +15,10 @@ urlpatterns = [
     path('ativos/novo/', views.AtivoCreateView.as_view(), name='ativo-create'),
     path('ativos/<int:pk>/', views.AtivoDetailView.as_view(), name='ativo-detail'),
     path('ativos/<int:pk>/editar/', views.AtivoUpdateView.as_view(), name='ativo-update'),
+    path('ativos/<int:pk>/status/', views.AtivoStatusUpdateView.as_view(), name='ativo-status-update'),
     path('ativos/<int:pk>/excluir/', views.AtivoDeleteView.as_view(), name='ativo-delete'),
+    path('ativos/<int:pk>/auditoria/exportar/csv/', views.AtivoAuditExportCSVView.as_view(), name='ativo-auditoria-export-csv'),
+    path('ativos/<int:pk>/auditoria/exportar/pdf/', views.AtivoAuditExportPDFView.as_view(), name='ativo-auditoria-export-pdf'),
 
     # --- Galeria de Imagens ---
     path('ativos/<int:pk>/imagens/adicionar/', views.AtivoImagemCreateView.as_view(), name='ativo-imagem-create'),
@@ -56,6 +59,8 @@ urlpatterns = [
     path('inventarios/<int:pk>/', views.InventarioDetailView.as_view(), name='inventario-detail'),
     path('inventarios/<int:pk>/gerar-snapshot/', views.InventarioGerarSnapshotView.as_view(), name='inventario-gerar-snapshot'),
     path('inventarios/item/<int:pk>/toggle/', views.InventarioItemToggleView.as_view(), name='inventario-item-toggle'),
+    path('inventarios/item/<int:pk>/evidencias/', views.InventarioItemEvidenciaListView.as_view(), name='inventario-item-evidencias'),
+    path('inventarios/item/<int:pk>/evidencias/avaria/', views.InventarioItemEvidenciaCreateView.as_view(), name='inventario-item-evidencia-avaria-create'),
     path('inventarios/<int:pk>/finalizar/', views.InventarioFinalizarView.as_view(), name='inventario-finalizar'),
 
     # --- Depreciação ---

@@ -27,8 +27,7 @@
     <!-- Descrição -->
     <div>
         <label class="form-label">Descrição Detalhada <span class="text-red-500">*</span></label>
-        {% render_field form.descricao_detalhada class="form-input" rows="3" placeholder="Descreva o ativo em
-        detalhes..." %}
+        {% render_field form.descricao_detalhada class="form-input" rows="3" placeholder="Descreva o ativo em detalhes..." %}
         {% for error in form.descricao_detalhada.errors %}
         <p class="form-error">{{ error }}</p>
         {% endfor %}
@@ -102,15 +101,12 @@
     <!-- Status e Conservação -->
     <div>
         <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Estado</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label class="form-label">Status</label>
-                {% render_field form.status class="form-input" %}
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="form-label">Estado de Conservação</label>
                 {% render_field form.estado_conservacao class="form-input" %}
             </div>
+
             <div class="flex items-end pb-2">
                 <label class="inline-flex items-center gap-2 cursor-pointer">
                     {{ form.depreciavel }}

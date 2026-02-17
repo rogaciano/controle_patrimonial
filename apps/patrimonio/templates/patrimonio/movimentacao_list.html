@@ -78,10 +78,8 @@
                     {% for mov in object_list %}
                     <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td class="px-6 py-4 text-sm border-t border-slate-100 dark:border-slate-800">
-                            <span class="font-mono font-semibold text-primary-600 dark:text-primary-400">{{
-                                mov.ativo.numero_tombamento }}</span>
-                            <br><span class="text-xs text-slate-500">{{ mov.ativo.descricao_detalhada|truncatewords:8
-                                }}</span>
+                            <span class="font-mono font-semibold text-primary-600 dark:text-primary-400">{{ mov.ativo.numero_tombamento }}</span>
+                            <br><span class="text-xs text-slate-500">{{ mov.ativo.descricao_detalhada|truncatewords:8 }}</span>
                         </td>
                         <td
                             class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 hidden md:table-cell">

@@ -14,6 +14,7 @@ from django.db import transaction
 
 from .models import (
     Ativo,
+    AtivoStatusHistorico,
     DepreciacaoRegistro,
     Inventario,
     InventarioItem,
@@ -22,6 +23,145 @@ from .models import (
 )
 
 logger = logging.getLogger('apps.patrimonio')
+
+
+PERM_SET_ASSET_MAINTENANCE = 'patrimonio.can_set_asset_maintenance'
+PERM_RETURN_ASSET_TO_ACTIVE = 'patrimonio.can_return_asset_to_active'
+PERM_PROCESS_ASSET_DISPOSAL = 'patrimonio.can_process_asset_disposal'
+
+
+ALLOWED_STATUS_TRANSITIONS = {
+    Ativo.Status.ATIVO: {
+        Ativo.Status.EM_MANUTENCAO,
+        Ativo.Status.EM_PROCESSO_BAIXA,
+    },
+    Ativo.Status.EM_MANUTENCAO: {
+        Ativo.Status.ATIVO,
+        Ativo.Status.EM_PROCESSO_BAIXA,
+    },
+    Ativo.Status.EM_PROCESSO_BAIXA: {
+        Ativo.Status.ATIVO,
+    },
+    Ativo.Status.BAIXADO: set(),
+}
+
+
+STATUS_REASON_CHOICES = {
+    Ativo.Status.EM_MANUTENCAO: [
+        ('QUEBRA', 'Quebra/Falha'),
+        ('AJUSTE', 'Ajuste técnico'),
+        ('PREVENTIVA', 'Manutenção preventiva'),
+        ('INSPECAO', 'Inspeção técnica'),
+        ('OUTRO', 'Outro'),
+    ],
+    Ativo.Status.ATIVO: [
+        ('MANUTENCAO_CONCLUIDA', 'Manutenção concluída'),
+        ('AJUSTE_CONCLUIDO', 'Ajuste concluído'),
+        ('LIBERACAO_TECNICA', 'Liberação técnica'),
+        ('OUTRO', 'Outro'),
+    ],
+    Ativo.Status.EM_PROCESSO_BAIXA: [
+        ('OBSOLESCENCIA', 'Obsolescência'),
+        ('IRRECUPERAVEL', 'Irrecuperável'),
+        ('DESUSO', 'Desuso'),
+        ('EXTRAVIO', 'Extravio'),
+        ('OUTRO', 'Outro'),
+    ],
+}
+
+
+TRANSITION_REQUIRED_PERMISSION = {
+    (Ativo.Status.ATIVO, Ativo.Status.EM_MANUTENCAO): PERM_SET_ASSET_MAINTENANCE,
+    (Ativo.Status.EM_MANUTENCAO, Ativo.Status.ATIVO): PERM_RETURN_ASSET_TO_ACTIVE,
+    (Ativo.Status.EM_PROCESSO_BAIXA, Ativo.Status.ATIVO): PERM_RETURN_ASSET_TO_ACTIVE,
+    (Ativo.Status.ATIVO, Ativo.Status.EM_PROCESSO_BAIXA): PERM_PROCESS_ASSET_DISPOSAL,
+    (Ativo.Status.EM_MANUTENCAO, Ativo.Status.EM_PROCESSO_BAIXA): PERM_PROCESS_ASSET_DISPOSAL,
+}
+
+
+def status_transicoes_permitidas(status_atual: str) -> list[str]:
+    permitidos = ALLOWED_STATUS_TRANSITIONS.get(status_atual, set())
+    return [status for status, _ in Ativo.Status.choices if status in permitidos]
+
+
+def usuario_pode_transicionar_status(
+    usuario,
+    status_atual: str,
+    status_destino: str,
+) -> bool:
+    permissao = TRANSITION_REQUIRED_PERMISSION.get((status_atual, status_destino))
+    if permissao is None:
+        return False
+    return bool(usuario and usuario.is_authenticated and usuario.has_perm(permissao))
+
+
+def status_transicoes_permitidas_para_usuario(status_atual: str, usuario) -> list[str]:
+    return [
+        status_destino
+        for status_destino in status_transicoes_permitidas(status_atual)
+        if usuario_pode_transicionar_status(usuario, status_atual, status_destino)
+    ]
+
+
+def status_motivos_disponiveis(status_destino: str) -> list[tuple[str, str]]:
+    return STATUS_REASON_CHOICES.get(status_destino, [('OUTRO', 'Outro')])
+
+
+def alterar_status_ativo(
+    ativo: Ativo,
+    novo_status: str,
+    usuario=None,
+    motivo: str = '',
+    justificativa: str = '',
+) -> Ativo:
+    """Altera o status do ativo respeitando regras de transição.
+
+    Observação:
+    - A transição para BAIXADO deve ocorrer pelo fluxo de baixa
+      (registrar_baixa), para manter trilha e justificativa.
+    """
+    if novo_status not in Ativo.Status.values:
+        raise ValidationError('Status de destino inválido.')
+
+    status_atual = ativo.status
+    if novo_status == status_atual:
+        raise ValidationError('O ativo já está neste status.')
+
+    permitidos = ALLOWED_STATUS_TRANSITIONS.get(status_atual, set())
+    if novo_status not in permitidos:
+        raise ValidationError(
+            f'Transição de status inválida: {status_atual} -> {novo_status}.'
+        )
+
+    motivo = (motivo or '').strip()
+    justificativa = (justificativa or '').strip()
+    if not motivo:
+        raise ValidationError('Informe o motivo da alteração de status.')
+
+    motivos_permitidos = {codigo for codigo, _ in status_motivos_disponiveis(novo_status)}
+    if motivo not in motivos_permitidos:
+        raise ValidationError('Motivo inválido para o status de destino.')
+
+    if usuario is not None and not usuario_pode_transicionar_status(
+        usuario,
+        status_atual,
+        novo_status,
+    ):
+        raise ValidationError('Usuário sem permissão para esta transição de status.')
+
+    ativo.status = novo_status
+    ativo.save(update_fields=['status', 'atualizado_em'])
+
+    AtivoStatusHistorico.objects.create(
+        ativo=ativo,
+        status_anterior=status_atual,
+        status_novo=novo_status,
+        motivo=motivo,
+        justificativa=justificativa,
+        alterado_por=usuario if getattr(usuario, 'is_authenticated', False) else None,
+    )
+
+    return ativo
 
 
 # =============================================================================
@@ -177,6 +317,13 @@ def registrar_baixa(
     2. Ativo não pode ter movimentações pendentes (SOLICITADA ou APROVADA)
     3. Ao baixar, o status muda para BAIXADO e a depreciação cessa
     """
+    if not (
+        autorizado_por
+        and getattr(autorizado_por, 'is_authenticated', False)
+        and autorizado_por.has_perm(PERM_PROCESS_ASSET_DISPOSAL)
+    ):
+        raise ValidationError('Usuário sem permissão para iniciar/processar baixa.')
+
     if ativo.status == 'BAIXADO':
         raise ValidationError('Ativo já está baixado.')
 
@@ -202,9 +349,8 @@ def registrar_baixa(
         )
 
         # Atualizar status do ativo
-        Ativo.objects.filter(pk=ativo.pk).update(
-            status='BAIXADO',
-        )
+        ativo.status = 'BAIXADO'
+        ativo.save(update_fields=['status', 'atualizado_em'])
 
         logger.info(
             'Ativo %s baixado. Tipo: %s. Valor contábil: %s',
@@ -256,7 +402,7 @@ def concluir_movimentacao(movimentacao: Movimentacao) -> None:
         ativo = movimentacao.ativo
 
         # Atualizar ativo com novos dados
-        campos_para_atualizar = ['local_fisico', 'responsavel']
+        campos_para_atualizar = ['local_fisico', 'responsavel', 'atualizado_em']
         ativo.local_fisico = movimentacao.local_destino
         ativo.responsavel = movimentacao.responsavel_novo
 
@@ -264,16 +410,7 @@ def concluir_movimentacao(movimentacao: Movimentacao) -> None:
             ativo.centro_custo = movimentacao.centro_custo_destino
             campos_para_atualizar.append('centro_custo')
 
-        # Usar update direto para evitar full_clean (tombamento check)
-        Ativo.objects.filter(pk=ativo.pk).update(
-            local_fisico=movimentacao.local_destino,
-            responsavel=movimentacao.responsavel_novo,
-            **(
-                {'centro_custo': movimentacao.centro_custo_destino}
-                if movimentacao.centro_custo_destino
-                else {}
-            ),
-        )
+        ativo.save(update_fields=campos_para_atualizar)
 
         movimentacao.status = 'CONCLUIDA'
         movimentacao.save(update_fields=['status', 'atualizado_em'])

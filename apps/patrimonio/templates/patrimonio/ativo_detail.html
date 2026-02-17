@@ -7,12 +7,17 @@
     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div>
             <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ ativo.numero_tombamento }}</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ ativo.descricao_detalhada|truncatewords:15
-                }}</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ ativo.descricao_detalhada|truncatewords:15 }}</p>
         </div>
         <div class="flex items-center gap-2">
+            {% if can_change_asset_status %}
+            <button type="button" id="open-status-modal-button" class="btn-secondary btn-sm" {% if not status_transicoes_permitidas %}disabled{% endif %}>
+                Alterar o status
+            </button>
+            {% endif %}
             <a href="{% url 'patrimonio:ativo-update' ativo.pk %}" class="btn-secondary btn-sm">Editar</a>
-            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary btn-sm">← Lista</a>
+            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary btn-sm"
+                onclick="if(document.referrer) { history.back(); return false; }">← Voltar</a>
         </div>
     </div>
 </header>
@@ -29,8 +34,7 @@
             <dl class="grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Tombamento</dt>
-                    <dd class="font-mono font-semibold text-primary-600 dark:text-primary-400 mt-1">{{
-                        ativo.numero_tombamento }}</dd>
+                    <dd class="font-mono font-semibold text-primary-600 dark:text-primary-400 mt-1">{{ ativo.numero_tombamento }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Categoria</dt>
@@ -53,8 +57,10 @@
                     <dd class="mt-1">
                         {% if ativo.status == 'ATIVO' %}<span class="badge-success">Ativo</span>
                         {% elif ativo.status == 'EM_MANUTENCAO' %}<span class="badge-warning">Manutenção</span>
+                        {% elif ativo.status == 'EM_PROCESSO_BAIXA' %}<span class="badge-warning">Em Processo de
+                            Baixa</span>
                         {% elif ativo.status == 'BAIXADO' %}<span class="badge-danger">Baixado</span>
-                        {% elif ativo.status == 'CEDIDO' %}<span class="badge-info">Cedido</span>
+                        {% else %}<span class="badge-info">{{ ativo.get_status_display }}</span>
                         {% endif %}
                     </dd>
                 </div>
@@ -71,8 +77,7 @@
             <dl class="space-y-3 text-sm">
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Valor Aquisição</dt>
-                    <dd class="text-lg font-bold text-slate-900 dark:text-white mt-1">R$ {{
-                        ativo.valor_aquisicao|floatformat:2 }}</dd>
+                    <dd class="text-lg font-bold text-slate-900 dark:text-white mt-1">R$ {{ ativo.valor_aquisicao|floatformat:2 }}</dd>
                 </div>
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Valor Residual</dt>
@@ -99,25 +104,147 @@
         </div>
     </div>
 
-    <!-- Foto Principal em Destaque -->
-    {% if foto_principal %}
+    {% if can_change_asset_status %}
+    <div id="status-modal" class="hidden fixed inset-0 z-50 flex items-start justify-center p-4 pt-4 sm:pt-8">
+        <div id="status-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div
+            class="relative w-full max-w-3xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-700 p-4">
+                <div>
+                    <h4 class="text-base font-semibold text-slate-900 dark:text-white">Alterar Status</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ativo {{ ativo.numero_tombamento }}</p>
+                </div>
+                <button type="button" id="close-status-modal-button" class="btn-ghost-secondary btn-sm">Fechar</button>
+            </div>
+
+            <form method="post" action="{% url 'patrimonio:ativo-status-update' ativo.pk %}"
+                class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                {% csrf_token %}
+                <div>
+                    <label class="form-label" for="status-select">Próximo status</label>
+                    <select id="status-select" name="status" class="form-input" {% if not status_transicoes_permitidas %}disabled{% endif %} required>
+                        {% for transicao in status_transicoes_config %}
+                        <option value="{{ transicao.value }}">{{ transicao.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="motivo-select">Motivo <span class="text-red-500">*</span></label>
+                    <select id="motivo-select" name="motivo" class="form-input" {% if not status_transicoes_permitidas %}disabled{% endif %} required>
+                        <option value="" selected disabled>Selecione o motivo</option>
+                        {% for transicao in status_transicoes_config %}
+                        {% if forloop.first %}
+                        {% for motivo_value, motivo_label in transicao.motivos %}
+                        <option value="{{ motivo_value }}">{{ motivo_label }}</option>
+                        {% endfor %}
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="justificativa-input">Explicação (opcional)</label>
+                    <input id="justificativa-input" name="justificativa" type="text" class="form-input" maxlength="500"
+                        placeholder="Ex.: falha na fonte, aguardando troca de peça" {% if not status_transicoes_permitidas %}disabled{% endif %}>
+                </div>
+                <div class="md:col-span-3 flex justify-end gap-2 mt-2">
+                    <button type="button" id="cancel-status-modal-button"
+                        class="btn-ghost-secondary btn-sm">Cancelar</button>
+                    <button type="submit" class="btn-secondary btn-sm" {% if not status_transicoes_permitidas %}disabled{% endif %}>Atualizar Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="hidden">
+        {% for transicao in status_transicoes_config %}
+        <template id="motivos-{{ transicao.value }}">
+            {% for motivo_value, motivo_label in transicao.motivos %}
+            <option value="{{ motivo_value }}">{{ motivo_label }}</option>
+            {% endfor %}
+        </template>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var openButton = document.getElementById('open-status-modal-button');
+            var closeButton = document.getElementById('close-status-modal-button');
+            var cancelButton = document.getElementById('cancel-status-modal-button');
+            var backdrop = document.getElementById('status-modal-backdrop');
+            var modal = document.getElementById('status-modal');
+            var statusSelect = document.getElementById('status-select');
+            var motivoSelect = document.getElementById('motivo-select');
+            if (!openButton || !closeButton || !cancelButton || !backdrop || !modal || !statusSelect || !motivoSelect) {
+                return;
+            }
+
+            function openModal() {
+                modal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            function syncMotivos() {
+                var selectedStatus = statusSelect.value;
+                var template = document.getElementById('motivos-' + selectedStatus);
+                if (!template) {
+                    motivoSelect.innerHTML = '<option value="" selected disabled>Selecione o motivo</option>';
+                    return;
+                }
+                motivoSelect.innerHTML = '<option value="" selected disabled>Selecione o motivo</option>' + template.innerHTML;
+            }
+
+            openButton.addEventListener('click', openModal);
+            closeButton.addEventListener('click', closeModal);
+            cancelButton.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+
+            statusSelect.addEventListener('change', syncMotivos);
+            syncMotivos();
+        });
+    </script>
+    {% endif %}
+
+    {% if status_historico %}
     <div class="card mb-6">
-        <div class="flex items-center gap-4">
-            <div class="flex-shrink-0">
-                <img src="{{ foto_principal.imagem.url }}" alt="{{ foto_principal.descricao|default:'Foto principal' }}"
-                    class="w-48 h-36 object-cover rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-            </div>
-            <div>
-                <p class="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
-                    ⭐ Foto Principal
-                </p>
-                {% if foto_principal.descricao %}
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ foto_principal.descricao }}</p>
-                {% endif %}
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">
-                    {{ foto_principal.get_tipo_display }} · {{ foto_principal.criado_em|date:"d/m/Y" }}
-                </p>
-            </div>
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Histórico de
+            Mudanças de Status</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Data
+                        </th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Transição</th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Motivo
+                        </th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Explicação</th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Usuário
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in status_historico %}
+                    <tr class="border-t border-slate-100 dark:border-slate-800 align-top">
+                        <td class="px-3 py-2 whitespace-nowrap">{{ item.criado_em|date:"d/m/Y H:i" }}</td>
+                        <td class="px-3 py-2">{{ item.get_status_anterior_display }} → {{ item.get_status_novo_display }}</td>
+                        <td class="px-3 py-2">{{ item.motivo }}</td>
+                        <td class="px-3 py-2 text-slate-600 dark:text-slate-300">{{ item.justificativa|default:"—" }}
+                        </td>
+                        <td class="px-3 py-2">{{ item.alterado_por|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     {% endif %}
@@ -142,6 +269,8 @@
                             Presença</th>
                         <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">Estado
                         </th>
+                        <th class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                            Evidências</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -162,6 +291,20 @@
                             {% endif %}
                         </td>
                         <td class="px-3 py-2">{{ item.get_estado_conservacao_encontrado_display|default:"-" }}</td>
+                        <td class="px-3 py-2">
+                            {% if item.evidencias_list %}
+                            <a href="{% url 'patrimonio:inventario-item-evidencias' item.pk %}" class="hover:underline text-primary-600">
+                                Ver imagens ({{ item.evidencias_list|length }})
+                            </a>
+                            {% if item.evidencias_list.0.descricao %}
+                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                {{ item.evidencias_list.0.descricao }}
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-slate-400">—</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -193,8 +336,7 @@
                     {% for d in depreciacoes %}
                     <tr class="border-t border-slate-100 dark:border-slate-800">
                         <td class="px-3 py-2">{{ d.mes_referencia|stringformat:"02d" }}/{{ d.ano_referencia }}</td>
-                        <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ {{
-                            d.valor_depreciado_mes|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ {{ d.valor_depreciado_mes|floatformat:2 }}</td>
                         <td class="px-3 py-2 text-right">R$ {{ d.depreciacao_acumulada|floatformat:2 }}</td>
                         <td class="px-3 py-2 text-right font-medium">R$ {{ d.valor_contabil_atual|floatformat:2 }}</td>
                     </tr>
@@ -202,6 +344,132 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    {% endif %}
+
+    {% if can_view_auditoria %}
+    <div x-data="{ openAuditModal: false }" class="card mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider">Histórico de
+                    Auditoria</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {% if auditoria_eventos %}{{ auditoria_eventos|length }} eventos no filtro atual.{% else %}Sem
+                    eventos no filtro atual.{% endif %}
+                </p>
+            </div>
+            <button type="button" @click="openAuditModal = true" class="btn-secondary btn-sm">Ver histórico
+                completo</button>
+        </div>
+
+        <template x-teleport="body">
+            <div x-cloak x-show="openAuditModal" style="display: none;"
+                class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-4 sm:pt-6"
+                @keydown.escape.window="openAuditModal = false">
+                <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="openAuditModal = false"></div>
+                <div
+                    class="relative w-full max-w-7xl max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl">
+                    <div
+                        class="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-700 p-4">
+                        <div>
+                            <h4 class="text-base font-semibold text-slate-900 dark:text-white">Histórico de Auditoria
+                            </h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ativo {{ ativo.numero_tombamento }}</p>
+                        </div>
+                        <button type="button" @click="openAuditModal = false"
+                            class="btn-ghost-secondary btn-sm">Fechar</button>
+                    </div>
+
+                    <div class="p-4 overflow-y-auto max-h-[calc(90vh-80px)]">
+                        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                            <div>
+                                <label
+                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Usuário</label>
+                                <select name="aud_actor"
+                                    class="block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm">
+                                    <option value="">Todos</option>
+                                    {% for actor in auditoria_atores %}
+                                    <option value="{{ actor.pk }}" {% if auditoria_filtros.actor_id == actor.pk|stringformat:"s" %}selected{% endif %}>{{ actor.get_username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Data
+                                    inicial</label>
+                                <input type="date" name="aud_start" value="{{ auditoria_filtros.start_raw }}"
+                                    class="block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Data
+                                    final</label>
+                                <input type="date" name="aud_end" value="{{ auditoria_filtros.end_raw }}"
+                                    class="block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm">
+                            </div>
+                            <div class="flex items-end gap-2">
+                                <button type="submit" class="btn-secondary btn-sm">Filtrar</button>
+                                <a href="{% url 'patrimonio:ativo-detail' ativo.pk %}"
+                                    class="btn-ghost-secondary btn-sm">Limpar</a>
+                            </div>
+                        </form>
+
+                        <div class="flex items-center gap-2 mb-4">
+                            <a href="{% url 'patrimonio:ativo-auditoria-export-csv' ativo.pk %}{% if auditoria_querystring %}?{{ auditoria_querystring }}{% endif %}"
+                                class="btn-ghost-secondary btn-sm">Exportar CSV</a>
+                            <a href="{% url 'patrimonio:ativo-auditoria-export-pdf' ativo.pk %}{% if auditoria_querystring %}?{{ auditoria_querystring }}{% endif %}"
+                                class="btn-secondary btn-sm">Exportar PDF</a>
+                        </div>
+
+                        {% if auditoria_eventos %}
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Data/Hora</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Usuário</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Origem</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Ação</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Campo</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Antes</th>
+                                        <th
+                                            class="text-left text-xs font-semibold text-slate-500 dark:text-slate-400 px-3 py-2">
+                                            Depois</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for evento in auditoria_eventos %}
+                                    <tr class="border-t border-slate-100 dark:border-slate-800 align-top">
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ evento.timestamp|date:"d/m/Y H:i:s" }}</td>
+                                        <td class="px-3 py-2">{{ evento.actor }}</td>
+                                        <td class="px-3 py-2">{{ evento.origem }}</td>
+                                        <td class="px-3 py-2">{{ evento.acao }}</td>
+                                        <td class="px-3 py-2">{{ evento.campo }}</td>
+                                        <td class="px-3 py-2 text-slate-500 dark:text-slate-400">{{ evento.antes }}</td>
+                                        <td class="px-3 py-2 font-medium">{{ evento.depois }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Nenhum evento de auditoria encontrado para
+                            este ativo.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
     {% endif %}
 
@@ -224,8 +492,7 @@
                     <p class="text-sm font-medium text-slate-900 dark:text-white">
                         {{ mov.local_origem.sala|default:"—" }} → {{ mov.local_destino.sala|default:"—" }}
                     </p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ mov.data_movimentacao|date:"d/m/Y" }} · {{
-                        mov.motivo|truncatewords:10 }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ mov.data_movimentacao|date:"d/m/Y" }} · {{ mov.motivo|truncatewords:10 }}</p>
                 </div>
                 <span
                     class="{% if mov.status == 'CONCLUIDA' %}badge-success{% elif mov.status == 'CANCELADA' %}badge-danger{% else %}badge-warning{% endif %}">

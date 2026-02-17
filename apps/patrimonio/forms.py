@@ -103,7 +103,7 @@ class AtivoForm(_BaseForm):
             'numero_tombamento', 'descricao_detalhada', 'categoria',
             'centro_custo', 'local_fisico', 'responsavel',
             'data_aquisicao', 'valor_aquisicao', 'valor_residual',
-            'vida_util_meses', 'estado_conservacao', 'status',
+            'vida_util_meses', 'estado_conservacao',
             'depreciavel', 'nota_fiscal', 'fornecedor', 'observacoes',
             'foto',
         ]

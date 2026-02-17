@@ -7,12 +7,16 @@ Cobre: depreciação (linear, guards, lote), baixa, movimentação, inventário.
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.contrib.auth.models import User
+from auditlog.models import LogEntry
+from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.urls import reverse
 
 from apps.patrimonio.models import (
     Ativo,
+    AtivoStatusHistorico,
     CategoriaContabil,
     CentroCusto,
     DepreciacaoRegistro,
@@ -312,6 +316,14 @@ class TestDepreciacaoService(_TestDataMixin, TestCase):
 class TestBaixaService(_TestDataMixin, TestCase):
     """Testes do registro de baixa patrimonial."""
 
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.perm_process_baixa = Permission.objects.get(
+            codename='can_process_asset_disposal'
+        )
+        cls.user.user_permissions.add(cls.perm_process_baixa)
+
     def test_registrar_baixa_sucesso(self):
         """Baixa com sucesso atualiza status do ativo."""
         ativo = self._criar_ativo(numero_tombamento='TOMB-BX1')
@@ -359,6 +371,198 @@ class TestBaixaService(_TestDataMixin, TestCase):
                 ativo, 'DOACAO', 'Doação', self.user
             )
 
+    def test_registrar_baixa_gera_log_de_alteracao_do_ativo(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-BX4')
+
+        services.registrar_baixa(
+            ativo=ativo,
+            tipo='OBSOLESCENCIA',
+            justificativa='Vida útil encerrada',
+            autorizado_por=self.user,
+        )
+
+        ativo_ct = ContentType.objects.get_for_model(Ativo)
+        self.assertTrue(
+            LogEntry.objects.filter(
+                content_type=ativo_ct,
+                object_id=ativo.pk,
+                action=getattr(LogEntry.Action, 'UPDATE', 1),
+            ).exists()
+        )
+
+    def test_baixa_sem_permissao_usuario(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-BX5')
+        usuario_sem_permissao = User.objects.create_user(
+            username='sempermbx',
+            password='testpass123',
+        )
+
+        with self.assertRaises(ValidationError):
+            services.registrar_baixa(
+                ativo=ativo,
+                tipo='DOACAO',
+                justificativa='Sem permissão',
+                autorizado_por=usuario_sem_permissao,
+            )
+
+
+class TestStatusAtivoService(_TestDataMixin, TestCase):
+    """Testes de transição de status do ativo."""
+
+    def test_transicao_valida_ativo_para_manutencao(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-ST1')
+
+        services.alterar_status_ativo(
+            ativo,
+            Ativo.Status.EM_MANUTENCAO,
+            motivo='QUEBRA',
+            justificativa='Falha no equipamento',
+        )
+        ativo.refresh_from_db()
+
+        self.assertEqual(ativo.status, Ativo.Status.EM_MANUTENCAO)
+        hist = AtivoStatusHistorico.objects.get(ativo=ativo)
+        self.assertEqual(hist.status_anterior, Ativo.Status.ATIVO)
+        self.assertEqual(hist.status_novo, Ativo.Status.EM_MANUTENCAO)
+        self.assertEqual(hist.motivo, 'QUEBRA')
+
+    def test_transicao_invalida_para_baixado_direto(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-ST2')
+
+        with self.assertRaises(ValidationError):
+            services.alterar_status_ativo(
+                ativo,
+                Ativo.Status.BAIXADO,
+                motivo='OBSOLESCENCIA',
+            )
+
+    def test_transicao_invalida_para_mesmo_status(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-ST3')
+
+        with self.assertRaises(ValidationError):
+            services.alterar_status_ativo(
+                ativo,
+                Ativo.Status.ATIVO,
+                motivo='OUTRO',
+            )
+
+    def test_transicao_exige_motivo(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-ST4')
+
+        with self.assertRaises(ValidationError):
+            services.alterar_status_ativo(ativo, Ativo.Status.EM_MANUTENCAO)
+
+
+class TestAtivoStatusViews(_TestDataMixin, TestCase):
+    """Testes de permissão e fluxo de alteração de status do ativo."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.ativo = cls._criar_ativo(cls, numero_tombamento='TOMB-STVW1')
+        cls.perm_manutencao = Permission.objects.get(codename='can_set_asset_maintenance')
+        cls.perm_retorno = Permission.objects.get(codename='can_return_asset_to_active')
+        cls.perm_baixa = Permission.objects.get(codename='can_process_asset_disposal')
+
+    def _payload_update(self, descricao):
+        return {
+            'numero_tombamento': self.ativo.numero_tombamento,
+            'descricao_detalhada': descricao,
+            'categoria': self.ativo.categoria_id,
+            'centro_custo': self.ativo.centro_custo_id,
+            'local_fisico': self.ativo.local_fisico_id,
+            'responsavel': self.ativo.responsavel_id,
+            'data_aquisicao': self.ativo.data_aquisicao.strftime('%Y-%m-%d'),
+            'valor_aquisicao': str(self.ativo.valor_aquisicao),
+            'valor_residual': str(self.ativo.valor_residual),
+            'vida_util_meses': str(self.ativo.vida_util_meses),
+            'estado_conservacao': self.ativo.estado_conservacao,
+            'depreciavel': 'on',
+            'nota_fiscal': self.ativo.nota_fiscal,
+            'fornecedor': self.ativo.fornecedor,
+            'observacoes': self.ativo.observacoes,
+        }
+
+    def test_status_update_bloqueia_sem_permissao(self):
+        self.client.force_login(self.user)
+        resp = self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.EM_MANUTENCAO, 'motivo': 'QUEBRA'},
+        )
+
+        self.assertEqual(resp.status_code, 403)
+
+    def test_status_update_permitido_com_permissao(self):
+        self.user.user_permissions.add(self.perm_manutencao)
+        self.client.force_login(self.user)
+
+        resp = self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.EM_MANUTENCAO, 'motivo': 'QUEBRA'},
+        )
+
+        self.assertEqual(resp.status_code, 302)
+        self.ativo.refresh_from_db()
+        self.assertEqual(self.ativo.status, Ativo.Status.EM_MANUTENCAO)
+
+    def test_status_update_baixa_requer_permissao_de_baixa(self):
+        self.user.user_permissions.add(self.perm_manutencao)
+        self.client.force_login(self.user)
+
+        self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.EM_MANUTENCAO, 'motivo': 'QUEBRA'},
+        )
+
+        resp = self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.EM_PROCESSO_BAIXA, 'motivo': 'OBSOLESCENCIA'},
+        )
+
+        self.assertEqual(resp.status_code, 403)
+        self.ativo.refresh_from_db()
+        self.assertEqual(self.ativo.status, Ativo.Status.EM_MANUTENCAO)
+
+    def test_status_update_retorno_requer_permissao_retorno(self):
+        self.user.user_permissions.add(self.perm_manutencao)
+        self.user.user_permissions.add(self.perm_baixa)
+        self.client.force_login(self.user)
+
+        self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.EM_PROCESSO_BAIXA, 'motivo': 'OBSOLESCENCIA'},
+        )
+
+        resp = self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.ATIVO, 'motivo': 'MANUTENCAO_CONCLUIDA'},
+        )
+
+        self.assertEqual(resp.status_code, 403)
+
+        self.user.user_permissions.add(self.perm_retorno)
+        resp2 = self.client.post(
+            reverse('patrimonio:ativo-status-update', kwargs={'pk': self.ativo.pk}),
+            data={'status': Ativo.Status.ATIVO, 'motivo': 'MANUTENCAO_CONCLUIDA'},
+        )
+
+        self.assertEqual(resp2.status_code, 302)
+        self.ativo.refresh_from_db()
+        self.assertEqual(self.ativo.status, Ativo.Status.ATIVO)
+
+    def test_update_ativo_nao_altera_status_por_form_comum(self):
+        self.user.user_permissions.add(self.perm_manutencao)
+        self.client.force_login(self.user)
+
+        update_url = reverse('patrimonio:ativo-update', kwargs={'pk': self.ativo.pk})
+        payload = self._payload_update('Alteracao sem status direto')
+        payload['status'] = Ativo.Status.EM_MANUTENCAO
+        resp = self.client.post(update_url, data=payload)
+
+        self.assertEqual(resp.status_code, 302)
+        self.ativo.refresh_from_db()
+        self.assertEqual(self.ativo.status, Ativo.Status.ATIVO)
+
 
 # =============================================================================
 # TESTES DO SERVICE DE MOVIMENTAÇÃO
@@ -404,6 +608,21 @@ class TestMovimentacaoService(_TestDataMixin, TestCase):
         self.assertEqual(mov.status, 'CONCLUIDA')
         self.assertEqual(ativo.local_fisico, self.local_destino)
         self.assertEqual(ativo.responsavel, self.responsavel_novo)
+
+    def test_concluir_movimentacao_gera_log_de_alteracao_do_ativo(self):
+        ativo = self._criar_ativo(numero_tombamento='TOMB-MV6')
+        mov = self._criar_movimentacao(ativo, status='APROVADA')
+
+        services.concluir_movimentacao(mov)
+
+        ativo_ct = ContentType.objects.get_for_model(Ativo)
+        self.assertTrue(
+            LogEntry.objects.filter(
+                content_type=ativo_ct,
+                object_id=ativo.pk,
+                action=getattr(LogEntry.Action, 'UPDATE', 1),
+            ).exists()
+        )
 
     def test_aprovar_nao_solicitada(self):
         """Só aceita aprovar movimentações SOLICITADAS."""
@@ -503,3 +722,110 @@ class TestInventarioService(_TestDataMixin, TestCase):
         inv = self._criar_inventario(status='CONCLUIDO')
         with self.assertRaises(ValidationError):
             services.finalizar_inventario(inv)
+
+
+class TestAuditoriaAtivoViews(_TestDataMixin, TestCase):
+    """Testes de visualização/exportação do histórico de auditoria."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.staff_user = User.objects.create_user(
+            username='staffuser',
+            password='staffpass123',
+            is_staff=True,
+        )
+        cls.super_user = User.objects.create_superuser(
+            username='superuser',
+            password='superpass123',
+            email='super@example.com',
+        )
+        cls.ativo = Ativo.objects.create(
+            numero_tombamento='TOMB-AUD-001',
+            descricao_detalhada='Ativo para testes de auditoria',
+            categoria=cls.categoria,
+            centro_custo=cls.centro_custo,
+            local_fisico=cls.local,
+            responsavel=cls.responsavel,
+            data_aquisicao=date.today() - timedelta(days=365),
+            valor_aquisicao=Decimal('5000.00'),
+            valor_residual=Decimal('500.00'),
+            vida_util_meses=60,
+        )
+
+    def _payload_update(self, descricao):
+        return {
+            'numero_tombamento': self.ativo.numero_tombamento,
+            'descricao_detalhada': descricao,
+            'categoria': self.ativo.categoria_id,
+            'centro_custo': self.ativo.centro_custo_id,
+            'local_fisico': self.ativo.local_fisico_id,
+            'responsavel': self.ativo.responsavel_id,
+            'data_aquisicao': self.ativo.data_aquisicao.strftime('%Y-%m-%d'),
+            'valor_aquisicao': str(self.ativo.valor_aquisicao),
+            'valor_residual': str(self.ativo.valor_residual),
+            'vida_util_meses': str(self.ativo.vida_util_meses),
+            'estado_conservacao': self.ativo.estado_conservacao,
+            'status': self.ativo.status,
+            'depreciavel': 'on',
+            'nota_fiscal': self.ativo.nota_fiscal,
+            'fornecedor': self.ativo.fornecedor,
+            'observacoes': self.ativo.observacoes,
+        }
+
+    def test_detail_nao_exibe_historico_para_usuario_comum(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(
+            reverse('patrimonio:ativo-detail', kwargs={'pk': self.ativo.pk})
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, 'Histórico de Auditoria')
+
+    def test_detail_exibe_historico_para_staff(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.get(
+            reverse('patrimonio:ativo-detail', kwargs={'pk': self.ativo.pk})
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Histórico de Auditoria')
+
+    def test_export_csv_bloqueia_usuario_sem_permissao(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(
+            reverse('patrimonio:ativo-auditoria-export-csv', kwargs={'pk': self.ativo.pk})
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_export_csv_permitido_para_staff(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.get(
+            reverse('patrimonio:ativo-auditoria-export-csv', kwargs={'pk': self.ativo.pk})
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('text/csv', resp['Content-Type'])
+
+    def test_export_pdf_permitido_para_staff(self):
+        self.client.force_login(self.staff_user)
+        resp = self.client.get(
+            reverse('patrimonio:ativo-auditoria-export-pdf', kwargs={'pk': self.ativo.pk})
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'application/pdf')
+
+    def test_filtro_por_usuario_na_auditoria(self):
+        update_url = reverse('patrimonio:ativo-update', kwargs={'pk': self.ativo.pk})
+
+        self.client.force_login(self.staff_user)
+        self.client.post(update_url, data=self._payload_update('Alteracao staff'))
+
+        self.client.force_login(self.super_user)
+        self.client.post(update_url, data=self._payload_update('Alteracao super'))
+
+        self.client.force_login(self.staff_user)
+        detail_url = reverse('patrimonio:ativo-detail', kwargs={'pk': self.ativo.pk})
+        resp = self.client.get(detail_url, {'aud_actor': str(self.staff_user.pk)})
+
+        self.assertEqual(resp.status_code, 200)
+        eventos = resp.context['auditoria_eventos']
+        self.assertTrue(eventos)
+        self.assertTrue(all(ev['actor'] == self.staff_user.username for ev in eventos))

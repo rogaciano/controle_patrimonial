@@ -147,6 +147,11 @@ class LocalFisico(BaseModel):
             parts.append(self.sala)
         return ' / '.join(parts)
 
+    @property
+    def nome(self):
+        """Retorna a representação em string como nome."""
+        return str(self)
+
 
 class Responsavel(BaseModel):
     """Colaborador que detém a guarda de bens patrimoniais."""
@@ -194,6 +199,11 @@ class Responsavel(BaseModel):
 
     def __str__(self) -> str:
         return f'{self.matricula} - {self.nome}'
+
+    @property
+    def codigo(self):
+        """Retorna a matrícula como código."""
+        return self.matricula
 
 
 # =============================================================================
@@ -312,6 +322,12 @@ class Ativo(BaseModel):
         ordering = ['-criado_em']
         verbose_name = 'Ativo'
         verbose_name_plural = 'Ativos'
+        permissions = [
+            ('can_change_asset_status', 'Pode alterar status de ativo'),
+            ('can_set_asset_maintenance', 'Pode colocar ativo em manutenção'),
+            ('can_return_asset_to_active', 'Pode retornar ativo para status ativo'),
+            ('can_process_asset_disposal', 'Pode iniciar/processar baixa patrimonial'),
+        ]
 
     def __str__(self) -> str:
         return f'{self.numero_tombamento} - {self.descricao_detalhada[:50]}'
@@ -388,6 +404,58 @@ class Ativo(BaseModel):
             return self.filter(responsavel_id=responsavel_id)
 
     objects = AtivoQuerySet.as_manager()
+
+
+# =============================================================================
+# HISTÓRICO DE MUDANÇA DE STATUS
+# =============================================================================
+
+
+class AtivoStatusHistorico(models.Model):
+    """Trilha de mudanças de status do ativo com motivo e justificativa."""
+
+    ativo = models.ForeignKey(
+        Ativo,
+        on_delete=models.CASCADE,
+        related_name='historico_status',
+        verbose_name='Ativo',
+    )
+    status_anterior = models.CharField(
+        max_length=20,
+        choices=Ativo.Status.choices,
+        verbose_name='Status Anterior',
+    )
+    status_novo = models.CharField(
+        max_length=20,
+        choices=Ativo.Status.choices,
+        verbose_name='Status Novo',
+    )
+    motivo = models.CharField(max_length=40, verbose_name='Motivo')
+    justificativa = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Justificativa detalhada',
+    )
+    alterado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='alteracoes_status_ativo',
+        verbose_name='Alterado por',
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Histórico de Status do Ativo'
+        verbose_name_plural = 'Histórico de Status dos Ativos'
+
+    def __str__(self) -> str:
+        return (
+            f'{self.ativo.numero_tombamento}: '
+            f'{self.status_anterior} -> {self.status_novo} ({self.motivo})'
+        )
 
 
 # =============================================================================
@@ -710,6 +778,19 @@ class InventarioItem(models.Model):
         default='',
         verbose_name='Observações',
     )
+    confirmado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='inventario_itens_confirmados',
+        verbose_name='Confirmado por',
+    )
+    confirmado_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Confirmado em',
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -729,11 +810,21 @@ class InventarioItem(models.Model):
 class InventarioItemEvidencia(models.Model):
     """Evidência (foto/documento) de item de inventário."""
 
+    class Tipo(models.TextChoices):
+        GERAL = 'GERAL', 'Geral'
+        AVARIA = 'AVARIA', 'Avaria'
+
     item = models.ForeignKey(
         InventarioItem,
         on_delete=models.CASCADE,
         related_name='evidencias',
         verbose_name='Item',
+    )
+    tipo = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.GERAL,
+        verbose_name='Tipo',
     )
     arquivo = models.FileField(
         upload_to='inventarios/evidencias/',
@@ -744,6 +835,14 @@ class InventarioItemEvidencia(models.Model):
         blank=True,
         default='',
         verbose_name='Descrição',
+    )
+    criado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name='inventario_evidencias_criadas',
+        verbose_name='Criado por',
     )
     criado_em = models.DateTimeField(auto_now_add=True)
 
@@ -868,6 +967,7 @@ auditlog.register(CentroCusto)
 auditlog.register(LocalFisico)
 auditlog.register(Responsavel)
 auditlog.register(Ativo)
+auditlog.register(AtivoStatusHistorico)
 auditlog.register(Movimentacao)
 auditlog.register(Inventario)
 auditlog.register(MotivoBaixa)
