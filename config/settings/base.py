@@ -124,6 +124,7 @@ ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 LOGIN_REDIRECT_URL = '/patrimonio/'
+ACCOUNT_ALLOW_REGISTRATION = False
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # --- Logging ---
