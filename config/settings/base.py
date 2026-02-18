@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'django-insecure-change-me-in-production-patrimonial-2026'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'localhost', '127.0.0.1']
 
@@ -120,7 +120,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*']
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email', 'username'}
 LOGIN_REDIRECT_URL = '/patrimonio/'
