@@ -149,7 +149,8 @@
                             {% if item.confirmado_por and item.confirmado_em %}
                             <div class="text-xs">
                                 <div class="font-medium">{{ item.confirmado_por.get_username }}</div>
-                                <div class="text-slate-500 dark:text-slate-400">{{ item.confirmado_em|date:"d/m/Y H:i" }}</div>
+                                <div class="text-slate-500 dark:text-slate-400">{{ item.confirmado_em|date:"d/m/Y H:i"
+                                    }}</div>
                             </div>
                             {% else %}
                             <span class="text-slate-400">—</span>
@@ -157,7 +158,8 @@
                         </td>
                         <td class="px-6 py-3 text-left">
                             {% if item.evidencias_list %}
-                            <a href="{% url 'patrimonio:inventario-item-evidencias' item.pk %}" class="btn-ghost-secondary btn-sm">Ver imagens ({{ item.evidencias_list|length }})</a>
+                            <a href="{% url 'patrimonio:inventario-item-evidencias' item.pk %}"
+                                class="btn-ghost-secondary btn-sm">Ver imagens ({{ item.evidencias_list|length }})</a>
                             {% if item.evidencias_list.0.descricao %}
                             <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                 {{ item.evidencias_list.0.descricao }}
@@ -200,11 +202,16 @@
                                 </svg>
                                 Desmarcar
                             </button>
-                            <form method="post" action="{% url 'patrimonio:inventario-item-evidencia-avaria-create' item.pk %}" enctype="multipart/form-data" class="inline">
+                            <form method="post"
+                                action="{% url 'patrimonio:inventario-item-evidencia-avaria-create' item.pk %}"
+                                enctype="multipart/form-data" class="inline">
                                 {% csrf_token %}
-                                <input type="file" name="arquivo" accept="image/*" class="hidden" onchange="this.form.submit()" />
+                                <input type="file" name="arquivo" accept="image/*" class="hidden"
+                                    onchange="this.form.submit()" />
                                 <input type="hidden" name="descricao" value="" />
-                                <button type="button" class="btn-secondary btn-sm" onclick="var d = prompt('Descrição da avaria:'); if (d === null) { return; } this.form.querySelector('input[name=descricao]').value = d; this.form.querySelector('input[type=file]').click();">Registrar avaria</button>
+                                <button type="button" class="btn-secondary btn-sm"
+                                    onclick="var d = prompt('Descrição da avaria:'); if (d === null) { return; } this.form.querySelector('input[name=descricao]').value = d; this.form.querySelector('input[type=file]').click();">Registrar
+                                    avaria</button>
                             </form>
                             {% endif %}
                         </td>
@@ -247,8 +254,9 @@
     {% if sobras %}
     <div class="glass rounded-2xl overflow-hidden shadow-lg">
         <div class="px-6 py-3 bg-yellow-50/50 dark:bg-yellow-900/10">
-            <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-400 uppercase tracking-wider">Sobras ({{
-                sobras|length }})</h3>
+            <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-400 uppercase tracking-wider">
+                Sobras ({{ sobras|length }})
+            </h3>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
