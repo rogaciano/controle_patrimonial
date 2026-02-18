@@ -129,10 +129,15 @@
                         class="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
 
                         <td class="px-6 py-3 font-mono font-semibold text-primary-600 dark:text-primary-400">
-                            {{ item.ativo.numero_tombamento }}
+                            <a href="{% url 'patrimonio:ativo-detail' item.ativo.pk %}"
+                                class="hover:underline text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors">
+                                {{ item.ativo.numero_tombamento }}
+                            </a>
                         </td>
                         <td class="px-6 py-3 text-slate-700 dark:text-slate-300 hidden md:table-cell">
-                            {{ item.ativo.descricao_detalhada|truncatewords:10 }}
+                            <a href="{% url 'patrimonio:ativo-detail' item.ativo.pk %}" class="hover:underline">
+                                {{ item.ativo.descricao_detalhada|truncatewords:10 }}
+                            </a>
                         </td>
                         <td class="px-6 py-3 text-center">
                             <span x-show="presenca == 'LOCALIZADO'" class="badge-success">Localizado</span>

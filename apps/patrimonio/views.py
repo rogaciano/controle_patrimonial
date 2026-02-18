@@ -775,7 +775,21 @@ class CategoriaListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return CategoriaContabil.objects.filter(ativo=True).select_related('parent')
+        return (
+            CategoriaContabil.objects.filter(ativo=True)
+            .select_related('parent')
+            .annotate(
+                ativos_count=Count(
+                    'ativos',
+                    filter=Q(ativos__ativo=True) & ~Q(ativos__status='BAIXADO'),
+                    distinct=True,
+                ),
+                ativos_valor_total=Sum(
+                    'ativos__valor_aquisicao',
+                    filter=Q(ativos__ativo=True) & ~Q(ativos__status='BAIXADO'),
+                ),
+            )
+        )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -783,6 +797,29 @@ class CategoriaListView(LoginRequiredMixin, ListView):
         ctx['create_url'] = reverse_lazy('patrimonio:categoria-create')
         ctx['detail_url_name'] = 'patrimonio:categoria-detail'
         ctx['update_url_name'] = 'patrimonio:categoria-update'
+
+        user = self.request.user
+        show_metrics = bool(user.is_authenticated and (user.is_staff or user.is_superuser))
+        ctx['show_manager_metrics'] = show_metrics
+
+        if show_metrics:
+            ativos_totais = Ativo.objects.filter(ativo=True).exclude(status='BAIXADO')
+            totals = ativos_totais.aggregate(
+                total_qtd=Count('id'),
+                total_valor=Sum('valor_aquisicao'),
+            )
+            total_qtd = totals.get('total_qtd') or 0
+            total_valor = totals.get('total_valor') or Decimal('0.00')
+            ctx['ativos_total_qtd'] = total_qtd
+            ctx['ativos_total_valor'] = total_valor
+
+            for obj in ctx.get('object_list', []):
+                qtd = getattr(obj, 'ativos_count', 0) or 0
+                valor = getattr(obj, 'ativos_valor_total', None)
+                if valor is None:
+                    valor = Decimal('0.00')
+                obj.ativos_pct_qtd = (qtd / total_qtd * 100) if total_qtd else 0
+                obj.ativos_pct_valor = (valor / total_valor * 100) if total_valor else 0
         return ctx
 
 
@@ -834,13 +871,49 @@ class CentroCustoListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return CentroCusto.objects.filter(ativo=True)
+        return (
+            CentroCusto.objects.filter(ativo=True)
+            .annotate(
+                ativos_count=Count(
+                    'ativos',
+                    filter=Q(ativos__ativo=True) & ~Q(ativos__status='BAIXADO'),
+                    distinct=True,
+                ),
+                ativos_valor_total=Sum(
+                    'ativos__valor_aquisicao',
+                    filter=Q(ativos__ativo=True) & ~Q(ativos__status='BAIXADO'),
+                ),
+            )
+        )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Centros de Custo'
         ctx['create_url'] = reverse_lazy('patrimonio:centrocusto-create')
         ctx['update_url_name'] = 'patrimonio:centrocusto-update'
+
+        user = self.request.user
+        show_metrics = bool(user.is_authenticated and (user.is_staff or user.is_superuser))
+        ctx['show_manager_metrics'] = show_metrics
+
+        if show_metrics:
+            ativos_totais = Ativo.objects.filter(ativo=True).exclude(status='BAIXADO')
+            totals = ativos_totais.aggregate(
+                total_qtd=Count('id'),
+                total_valor=Sum('valor_aquisicao'),
+            )
+            total_qtd = totals.get('total_qtd') or 0
+            total_valor = totals.get('total_valor') or Decimal('0.00')
+            ctx['ativos_total_qtd'] = total_qtd
+            ctx['ativos_total_valor'] = total_valor
+
+            for obj in ctx.get('object_list', []):
+                qtd = getattr(obj, 'ativos_count', 0) or 0
+                valor = getattr(obj, 'ativos_valor_total', None)
+                if valor is None:
+                    valor = Decimal('0.00')
+                obj.ativos_pct_qtd = (qtd / total_qtd * 100) if total_qtd else 0
+                obj.ativos_pct_valor = (valor / total_valor * 100) if total_valor else 0
         return ctx
 
 
