@@ -29,7 +29,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Valor Total</p>
-                    <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">R$ {{ valor_total|floatformat:2 }}</p>
+                    <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">R$ <span class="js-money" data-value="{{ valor_total }}">{{ valor_total|floatformat:2 }}</span></p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -51,7 +51,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Depreciacao Acumulada</p>
-                    <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">R$ {{ depreciacao_total|floatformat:2 }}</p>
+                    <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-white">R$ <span class="js-money" data-value="{{ depreciacao_total }}">{{ depreciacao_total|floatformat:2 }}</span></p>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
@@ -67,6 +67,16 @@
         <div class="card">
             <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Ativos por Categoria</h3>
             <div class="h-64"><canvas id="chart-categoria"></canvas></div>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="card">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Ativos por Local (Qtd)</h3>
+            <div class="h-64"><canvas id="chart-local-qtd"></canvas></div>
+        </div>
+        <div class="card">
+            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Ativos por Local (Valor)</h3>
+            <div class="h-64"><canvas id="chart-local-valor"></canvas></div>
         </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -102,11 +112,54 @@ document.addEventListener('DOMContentLoaded', function() {
     var isDark = document.documentElement.classList.contains('dark');
     Chart.defaults.color = isDark ? '#94a3b8' : '#64748b';
     Chart.defaults.borderColor = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.05)';
+
+    function brl(value) {
+        try {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        } catch (e) {
+            return 'R$ ' + (value || 0).toFixed(2);
+        }
+    }
+
+    function parseNumber(raw) {
+        if (raw === null || raw === undefined) {
+            return NaN;
+        }
+        if (typeof raw === 'number') {
+            return raw;
+        }
+        var s = String(raw).trim();
+        if (!s) {
+            return NaN;
+        }
+        var n = Number(s);
+        if (Number.isFinite(n)) {
+            return n;
+        }
+        s = s.replace(/\./g, '').replace(',', '.');
+        n = Number(s);
+        return n;
+    }
+
+    document.querySelectorAll('.js-money').forEach(function(el) {
+        var raw = el.getAttribute('data-value');
+        var value = parseNumber(raw);
+        if (!Number.isFinite(value)) {
+            return;
+        }
+        var formatted = brl(value);
+        if (formatted.startsWith('R$')) {
+            formatted = formatted.replace(/^R\$\s?/, '');
+        }
+        el.textContent = formatted;
+    });
+
+    var palette = ['#0ea5e9','#f59e0b','#ef4444','#10b981','#8b5cf6','#14b8a6','#f97316','#6366f1','#ec4899','#84cc16','#06b6d4','#a855f7'];
     var statusData = JSON.parse('{{ status_data|escapejs }}');
     if (statusData.length && document.getElementById('chart-status')) {
         new Chart(document.getElementById('chart-status'), {
             type: 'doughnut',
-            data: { labels: statusData.map(function(d){return d.label}), datasets: [{data: statusData.map(function(d){return d.count}), backgroundColor: ['#0ea5e9','#f59e0b','#ef4444','#10b981','#8b5cf6'], borderWidth: 0, borderRadius: 4}] },
+            data: { labels: statusData.map(function(d){return d.label}), datasets: [{data: statusData.map(function(d){return d.count}), backgroundColor: palette, borderWidth: 0, borderRadius: 4}] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } } }
         });
     }
@@ -116,6 +169,39 @@ document.addEventListener('DOMContentLoaded', function() {
             type: 'bar',
             data: { labels: catData.map(function(d){return d.label}), datasets: [{label: 'Qtd', data: catData.map(function(d){return d.count}), backgroundColor: isDark ? 'rgba(14,165,233,0.6)' : 'rgba(14,165,233,0.8)', borderRadius: 8}] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    }
+
+    var localQtdData = JSON.parse('{{ local_qtd_data|escapejs }}');
+    if (localQtdData.length && document.getElementById('chart-local-qtd')) {
+        new Chart(document.getElementById('chart-local-qtd'), {
+            type: 'doughnut',
+            data: { labels: localQtdData.map(function(d){return d.label}), datasets: [{data: localQtdData.map(function(d){return d.count}), backgroundColor: palette, borderWidth: 0, borderRadius: 4}] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } } } }
+        });
+    }
+
+    var localValorData = JSON.parse('{{ local_valor_data|escapejs }}');
+    if (localValorData.length && document.getElementById('chart-local-valor')) {
+        new Chart(document.getElementById('chart-local-valor'), {
+            type: 'doughnut',
+            data: { labels: localValorData.map(function(d){return d.label}), datasets: [{data: localValorData.map(function(d){return d.value}), backgroundColor: palette, borderWidth: 0, borderRadius: 4}] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var label = ctx.label || '';
+                                var val = ctx.parsed || 0;
+                                return label + ': ' + brl(val);
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 });

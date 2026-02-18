@@ -423,6 +423,53 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ]
         ctx['categoria_data'] = json.dumps(categoria_data)
 
+        local_rows = list(
+            ativos_qs.values(
+                'local_fisico_id',
+                'local_fisico__edificio',
+                'local_fisico__andar',
+                'local_fisico__sala',
+            )
+            .annotate(
+                total=Count('id'),
+                valor=Sum('valor_aquisicao'),
+            )
+            .order_by('-total')
+        )
+
+        def _local_label(row: dict) -> str:
+            if not row.get('local_fisico_id'):
+                return 'Sem local'
+            parts = [row.get('local_fisico__edificio') or '']
+            andar = (row.get('local_fisico__andar') or '').strip()
+            sala = (row.get('local_fisico__sala') or '').strip()
+            if andar:
+                parts.append(andar)
+            if sala:
+                parts.append(sala)
+            return ' / '.join([p for p in parts if p]) or 'Sem local'
+
+        local_qtd_data = [
+            {
+                'label': _local_label(r),
+                'count': r['total'],
+            }
+            for r in local_rows
+            if r['total']
+        ]
+
+        local_valor_data = [
+            {
+                'label': _local_label(r),
+                'value': float(r['valor'] or 0),
+            }
+            for r in local_rows
+            if r['valor']
+        ]
+
+        ctx['local_qtd_data'] = json.dumps(local_qtd_data)
+        ctx['local_valor_data'] = json.dumps(local_valor_data)
+
         return ctx
 
 

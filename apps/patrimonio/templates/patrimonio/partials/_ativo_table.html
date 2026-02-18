@@ -51,7 +51,7 @@
                     </td>
                     <td
                         class="px-6 py-4 text-sm text-right text-slate-700 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800 hidden md:table-cell font-medium">
-                        R$ {{ ativo.valor_aquisicao|floatformat:2 }}
+                        R$ <span class="js-money" data-value="{{ ativo.valor_aquisicao }}">{{ ativo.valor_aquisicao|floatformat:2 }}</span>
                     </td>
                     <td class="px-6 py-4 text-center border-t border-slate-100 dark:border-slate-800">
                         {% if ativo.status == 'ATIVO' %}

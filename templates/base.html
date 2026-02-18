@@ -115,6 +115,80 @@
     <!-- Alpine.js via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <script>
+        (function () {
+            function brl(value) {
+                try {
+                    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+                } catch (e) {
+                    return 'R$ ' + (value || 0).toFixed(2);
+                }
+            }
+
+            function parseNumber(raw) {
+                if (raw === null || raw === undefined) {
+                    return NaN;
+                }
+                if (typeof raw === 'number') {
+                    return raw;
+                }
+                var s = String(raw).trim();
+                if (!s) {
+                    return NaN;
+                }
+                var n = Number(s);
+                if (Number.isFinite(n)) {
+                    return n;
+                }
+                s = s.replace(/\./g, '').replace(',', '.');
+                n = Number(s);
+                return n;
+            }
+
+            function formatMoneyElements(root) {
+                (root || document).querySelectorAll('.js-money').forEach(function (el) {
+                    var raw = el.getAttribute('data-value');
+                    var value = parseNumber(raw);
+                    if (!Number.isFinite(value)) {
+                        return;
+                    }
+                    var formatted = brl(value);
+                    if (formatted.startsWith('R$')) {
+                        formatted = formatted.replace(/^R\$\s?/, '');
+                    }
+                    el.textContent = formatted;
+                });
+            }
+
+            function formatNumberElements(root) {
+                (root || document).querySelectorAll('.js-number').forEach(function (el) {
+                    var raw = el.getAttribute('data-value');
+                    var value = parseNumber(raw);
+                    if (!Number.isFinite(value)) {
+                        return;
+                    }
+                    try {
+                        el.textContent = new Intl.NumberFormat('pt-BR').format(value);
+                    } catch (e) {
+                        el.textContent = String(value);
+                    }
+                });
+            }
+
+            window.patrimonioFormat = {
+                brl: brl,
+                parseNumber: parseNumber,
+                formatMoneyElements: formatMoneyElements,
+                formatNumberElements: formatNumberElements,
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                formatMoneyElements(document);
+                formatNumberElements(document);
+            });
+        })();
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

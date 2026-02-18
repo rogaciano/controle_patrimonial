@@ -77,11 +77,11 @@
             <dl class="space-y-3 text-sm">
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Valor Aquisição</dt>
-                    <dd class="text-lg font-bold text-slate-900 dark:text-white mt-1">R$ {{ ativo.valor_aquisicao|floatformat:2 }}</dd>
+                    <dd class="text-lg font-bold text-slate-900 dark:text-white mt-1">R$ <span class="js-money" data-value="{{ ativo.valor_aquisicao }}">{{ ativo.valor_aquisicao|floatformat:2 }}</span></dd>
                 </div>
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Valor Residual</dt>
-                    <dd class="mt-1">R$ {{ ativo.valor_residual|floatformat:2|default:"0,00" }}</dd>
+                    <dd class="mt-1">R$ <span class="js-money" data-value="{{ ativo.valor_residual|default:0 }}">{{ ativo.valor_residual|floatformat:2|default:"0,00" }}</span></dd>
                 </div>
                 <div>
                     <dt class="text-slate-500 dark:text-slate-400">Vida Útil</dt>
@@ -336,9 +336,9 @@
                     {% for d in depreciacoes %}
                     <tr class="border-t border-slate-100 dark:border-slate-800">
                         <td class="px-3 py-2">{{ d.mes_referencia|stringformat:"02d" }}/{{ d.ano_referencia }}</td>
-                        <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ {{ d.valor_depreciado_mes|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right">R$ {{ d.depreciacao_acumulada|floatformat:2 }}</td>
-                        <td class="px-3 py-2 text-right font-medium">R$ {{ d.valor_contabil_atual|floatformat:2 }}</td>
+                        <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ <span class="js-money" data-value="{{ d.valor_depreciado_mes }}">{{ d.valor_depreciado_mes|floatformat:2 }}</span></td>
+                        <td class="px-3 py-2 text-right">R$ <span class="js-money" data-value="{{ d.depreciacao_acumulada }}">{{ d.depreciacao_acumulada|floatformat:2 }}</span></td>
+                        <td class="px-3 py-2 text-right font-medium">R$ <span class="js-money" data-value="{{ d.valor_contabil_atual }}">{{ d.valor_contabil_atual|floatformat:2 }}</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
