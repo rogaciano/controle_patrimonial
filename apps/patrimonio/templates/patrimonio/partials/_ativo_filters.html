@@ -11,18 +11,18 @@
         <div>
             <label
                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Categoria</label>
-            {% render_field filter.form.categoria class="form-input w-full text-sm" %}
+            {% render_field filter.form.categoria class="form-input select2-multiple w-full text-sm" %}
         </div>
         <div>
             <label
                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Status</label>
-            {% render_field filter.form.status class="form-input w-full text-sm" %}
+            {% render_field filter.form.status class="form-input select2-multiple w-full text-sm" %}
         </div>
         <div>
             <label
                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Local
                 Físico</label>
-            {% render_field filter.form.local_fisico class="form-input w-full text-sm" %}
+            {% render_field filter.form.local_fisico class="form-input select2-multiple w-full text-sm" %}
         </div>
         <div class="flex items-end gap-2">
             <button type="submit" class="btn-primary btn-sm">Filtrar</button>

@@ -21,30 +21,27 @@ class AtivoFilter(django_filters.FilterSet):
         method='filtrar_busca',
         label='Buscar',
     )
-    categoria = django_filters.ModelChoiceFilter(
+    categoria = django_filters.ModelMultipleChoiceFilter(
         queryset=CategoriaContabil.objects.filter(ativo=True),
         label='Categoria',
-        empty_label='Todos',
     )
     centro_custo = django_filters.ModelChoiceFilter(
         queryset=CentroCusto.objects.filter(ativo=True),
         label='Centro de Custo',
         empty_label='Todos',
     )
-    local_fisico = django_filters.ModelChoiceFilter(
+    local_fisico = django_filters.ModelMultipleChoiceFilter(
         queryset=LocalFisico.objects.filter(ativo=True),
         label='Local Físico',
-        empty_label='Todos',
     )
     responsavel = django_filters.ModelChoiceFilter(
         queryset=Responsavel.objects.filter(ativo=True),
         label='Responsável',
         empty_label='Todos',
     )
-    status = django_filters.ChoiceFilter(
+    status = django_filters.MultipleChoiceFilter(
         choices=Ativo.Status.choices,
         label='Status',
-        null_label='Todos',
     )
     estado_conservacao = django_filters.ChoiceFilter(
         choices=Ativo.EstadoConservacao.choices,
