@@ -139,10 +139,21 @@ class InventarioItemFilter(django_filters.FilterSet):
         queryset=LocalFisico.objects.filter(ativo=True),
         label='Local Físico',
     )
+    responsavel = django_filters.ModelChoiceFilter(
+        field_name='ativo__responsavel',
+        queryset=Responsavel.objects.filter(ativo=True),
+        label='Responsável',
+        empty_label='Todos',
+    )
+    status_ativo = django_filters.MultipleChoiceFilter(
+        field_name='ativo__status',
+        choices=Ativo.Status.choices,
+        label='Status do Ativo',
+    )
 
     class Meta:
         model = InventarioItem
-        fields = ['busca', 'presenca', 'categoria', 'local_fisico']
+        fields = ['busca', 'presenca', 'categoria', 'local_fisico', 'responsavel', 'status_ativo']
 
     def filtrar_busca(self, queryset, name, value):
         return queryset.filter(

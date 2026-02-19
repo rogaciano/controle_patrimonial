@@ -52,26 +52,8 @@
     </div>
 
     <!-- Items Table -->
-    {% if itens %}
-    <!-- Filter -->
-    <div class="flex justify-end mb-4">
-        <form method="GET"
-            class="flex items-center gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-sm">
-            <svg class="w-4 h-4 text-slate-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                </path>
-            </svg>
-            <label for="status" class="text-slate-500 font-medium">Filtrar:</label>
-            <select name="status" onchange="this.form.submit()"
-                class="bg-transparent border-none text-slate-700 dark:text-white focus:ring-0 py-1 pl-2 pr-8 cursor-pointer">
-                <option value="">Todos os Itens</option>
-                <option value="LOCALIZADO" {% if is_filtered_localizado %}selected{% endif %}>Localizados</option>
-                <option value="NAO_LOCALIZADO" {% if is_filtered_nao_localizado %}selected{% endif %}>Não Localizados
-                </option>
-            </select>
-        </form>
-    </div>
+    {% if inventario.itens.exists %}
+    {% include 'patrimonio/partials/_inventario_item_filters.html' %}
 
     <div class="glass rounded-2xl overflow-hidden shadow-lg mb-6">
         <div class="px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">

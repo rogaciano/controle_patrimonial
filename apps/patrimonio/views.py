@@ -37,7 +37,7 @@ from django.views.generic import (
 from django_filters.views import FilterView
 from auditlog.models import LogEntry
 
-from .filters import AtivoFilter, InventarioFilter, MovimentacaoFilter
+from .filters import AtivoFilter, InventarioFilter, MovimentacaoFilter, InventarioItemFilter
 from .forms import (
     AtivoForm,
     AtivoImagemForm,
@@ -1291,14 +1291,10 @@ class InventarioDetailView(LoginRequiredMixin, DetailView):
         )
 
         # Filtros
-        status_filter = self.request.GET.get('status')
-        if status_filter:
-            itens = itens.filter(presenca=status_filter)
+        item_filter = InventarioItemFilter(self.request.GET, queryset=itens)
+        ctx['item_filter'] = item_filter
+        ctx['itens'] = item_filter.qs
 
-        ctx['itens'] = itens
-        ctx['status_filter'] = status_filter
-        ctx['is_filtered_localizado'] = (status_filter == 'LOCALIZADO')
-        ctx['is_filtered_nao_localizado'] = (status_filter == 'NAO_LOCALIZADO')
         
         ctx['sobras'] = inv.sobras.all()
         ctx['localizados'] = inv.itens.filter(presenca='LOCALIZADO').count()

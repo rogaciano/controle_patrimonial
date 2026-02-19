@@ -1,0 +1,45 @@
+<!-- Inventario Item Filters Partial -->
+{% load widget_tweaks %}
+<div class="glass rounded-2xl p-4 mb-6">
+    <form method="GET" action="{% url 'patrimonio:inventario-detail' inventario.pk %}"
+        class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Busca</label>
+            {% render_field item_filter.form.busca class="form-input w-full text-sm h-[38px]"
+            placeholder="Tombamento..." %}
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Presença</label>
+            {% render_field item_filter.form.presenca class="form-input w-full text-sm h-[38px]" %}
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Categoria</label>
+            {% render_field item_filter.form.categoria class="form-input select2-multiple w-full text-sm" %}
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Local
+                Físico</label>
+            {% render_field item_filter.form.local_fisico class="form-input select2-multiple w-full text-sm" %}
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Responsável</label>
+            {% render_field item_filter.form.responsavel class="form-input w-full text-sm h-[38px]" %}
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Status
+                Ativo</label>
+            {% render_field item_filter.form.status_ativo class="form-input select2-multiple w-full text-sm" %}
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="btn-primary h-[38px] w-full text-center justify-center">Filtrar</button>
+            <a href="{% url 'patrimonio:inventario-detail' inventario.pk %}"
+                class="btn-ghost-secondary h-[38px] flex items-center">Limpar</a>
+        </div>
+    </form>
+</div>
