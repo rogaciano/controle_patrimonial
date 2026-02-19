@@ -54,11 +54,11 @@
                     <dd class="mt-1">{{ ativo.local_fisico }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Responsável</dt>
+                    <dt class="text-slate-500 dark:text-slate-400">Responsável/dt>
                     <dd class="mt-1">{{ ativo.responsavel.nome }}</dd>
                 </div>
                 <div>
-                    <dt class="text-slate-500 dark:text-slate-400">Status</dt>
+                    <dt class="text-slate-500 dark:text-slate-400">Status*</dt>
                     <dd class="mt-1">
                         {% if ativo.status == 'ATIVO' %}<span class="badge-success">Ativo</span>
                         {% elif ativo.status == 'EM_MANUTENCAO' %}<span class="badge-warning">Manutenção</span>
@@ -497,7 +497,7 @@
     </div>
     {% endif %}
 
-    <!-- Movement History -->
+    <!-- Movement History  Rogaciano-->
     {% if movimentacoes %}
     <div class="card">
         <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Últimas
