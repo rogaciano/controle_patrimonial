@@ -8,6 +8,7 @@ from .models import (
     CategoriaContabil,
     CentroCusto,
     Inventario,
+    InventarioItem,
     LocalFisico,
     Movimentacao,
     Responsavel,
