@@ -6,7 +6,7 @@
             <label
                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Busca</label>
             <input type="text" name="busca" value="{{ request.GET.busca }}" placeholder="Tombamento, descrição..."
-                class="form-input w-full text-sm">
+                class="form-input w-full text-sm h-[38px]">
         </div>
         <div>
             <label
@@ -25,8 +25,8 @@
             {% render_field filter.form.local_fisico class="form-input select2-multiple w-full text-sm" %}
         </div>
         <div class="flex items-end gap-2">
-            <button type="submit" class="btn-primary btn-sm">Filtrar</button>
-            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary btn-sm">Limpar</a>
+            <button type="submit" class="btn-primary h-[38px]">Filtrar</button>
+            <a href="{% url 'patrimonio:ativo-list' %}" class="btn-ghost-secondary h-[38px]">Limpar</a>
         </div>
     </form>
 </div>
