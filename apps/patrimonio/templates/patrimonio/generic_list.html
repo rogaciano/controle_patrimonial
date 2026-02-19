@@ -65,10 +65,14 @@
                                 label: (context) => {
                                     let label = context.label || '';
                                     let value = context.parsed;
+                                    let total = context.dataset.data.reduce((a, b) => a + (Number(b) || 0), 0);
+                                    let percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                    
+                                    let valueDisplay = value;
                                     if (this.chartTitle.includes('Valor')) {
-                                        return label + ': ' + patrimonioFormat.brl(value);
+                                        valueDisplay = patrimonioFormat.brl(value);
                                     }
-                                    return label + ': ' + value;
+                                    return `${label}: ${valueDisplay} (${percentage})`;
                                 }
                             }
                         }
