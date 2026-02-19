@@ -115,3 +115,38 @@ class InventarioFilter(django_filters.FilterSet):
     class Meta:
         model = Inventario
         fields = ['status']
+
+
+class InventarioItemFilter(django_filters.FilterSet):
+    """Filtros para itens de um inventário específico."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar Ativo',
+    )
+    presenca = django_filters.ChoiceFilter(
+        choices=InventarioItem.Presenca.choices,
+        label='Presença',
+        null_label='Todos',
+    )
+    categoria = django_filters.ModelMultipleChoiceFilter(
+        field_name='ativo__categoria',
+        queryset=CategoriaContabil.objects.filter(ativo=True),
+        label='Categoria',
+    )
+    local_fisico = django_filters.ModelMultipleChoiceFilter(
+        field_name='ativo__local_fisico',
+        queryset=LocalFisico.objects.filter(ativo=True),
+        label='Local Físico',
+    )
+
+    class Meta:
+        model = InventarioItem
+        fields = ['busca', 'presenca', 'categoria', 'local_fisico']
+
+    def filtrar_busca(self, queryset, name, value):
+        return queryset.filter(
+            models.Q(ativo__numero_tombamento__icontains=value)
+            | models.Q(ativo__descricao_detalhada__icontains=value)
+            | models.Q(observacoes__icontains=value)
+        )
