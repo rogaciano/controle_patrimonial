@@ -351,14 +351,14 @@
                     <tr class="border-t border-slate-100 dark:border-slate-800">
                         <td class="px-3 py-2">{{ d.mes_referencia|stringformat:"02d" }}/{{ d.ano_referencia }}</td>
                         <td class="px-3 py-2 text-right text-red-600 dark:text-red-400">-R$ <span class="js-money"
-                                data-value="{{ d.valor_depreciado_mes }}">{{ d.valor_depreciado_mes|floatformat:2
-                                }}</span></td>
+                                data-value="{{ d.valor_depreciado_mes }}">
+                                {{ d.valor_depreciado_mes|floatformat:2 }}</span></td>
                         <td class="px-3 py-2 text-right">R$ <span class="js-money"
-                                data-value="{{ d.depreciacao_acumulada }}">{{ d.depreciacao_acumulada|floatformat:2
-                                }}</span></td>
+                                data-value="{{ d.depreciacao_acumulada }}">
+                                {{ d.depreciacao_acumulada|floatformat:2 }}</span></td>
                         <td class="px-3 py-2 text-right font-medium">R$ <span class="js-money"
-                                data-value="{{ d.valor_contabil_atual }}">{{ d.valor_contabil_atual|floatformat:2
-                                }}</span></td>
+                                data-value="{{ d.valor_contabil_atual }}">
+                                {{ d.valor_contabil_atual|floatformat:2 }}</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -394,8 +394,8 @@
                         <div>
                             <h4 class="text-base font-semibold text-slate-900 dark:text-white">Histórico de Auditoria
                             </h4>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ativo {{ ativo.numero_tombamento
-                                }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Ativo
+                                {{ ativo.numero_tombamento }}</p>
                         </div>
                         <button type="button" @click="openAuditModal = false"
                             class="btn-ghost-secondary btn-sm">Fechar</button>
@@ -473,8 +473,8 @@
                                 <tbody>
                                     {% for evento in auditoria_eventos %}
                                     <tr class="border-t border-slate-100 dark:border-slate-800 align-top">
-                                        <td class="px-3 py-2 whitespace-nowrap">{{ evento.timestamp|date:"d/m/Y H:i:s"
-                                            }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">
+                                            {{ evento.timestamp|date:"d/m/Y H:i:s" }}</td>
                                         <td class="px-3 py-2">{{ evento.actor }}</td>
                                         <td class="px-3 py-2">{{ evento.origem }}</td>
                                         <td class="px-3 py-2">{{ evento.acao }}</td>
@@ -516,8 +516,8 @@
                     <p class="text-sm font-medium text-slate-900 dark:text-white">
                         {{ mov.local_origem.sala|default:"—" }} → {{ mov.local_destino.sala|default:"—" }}
                     </p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ mov.data_movimentacao|date:"d/m/Y" }} · {{
-                        mov.motivo|truncatewords:10 }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ mov.data_movimentacao|date:"d/m/Y" }} · {{ mov.motivo|truncatewords:10 }}</p>
                 </div>
                 <span
                     class="{% if mov.status == 'CONCLUIDA' %}badge-success{% elif mov.status == 'CANCELADA' %}badge-danger{% else %}badge-warning{% endif %}">
