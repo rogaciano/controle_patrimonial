@@ -799,7 +799,7 @@ class CategoriaListView(LoginRequiredMixin, ListView):
         ctx['update_url_name'] = 'patrimonio:categoria-update'
 
         user = self.request.user
-        show_metrics = bool(user.is_authenticated and (user.is_staff or user.is_superuser))
+        show_metrics = user.is_authenticated
         ctx['show_manager_metrics'] = show_metrics
 
         if show_metrics:
@@ -820,6 +820,21 @@ class CategoriaListView(LoginRequiredMixin, ListView):
                     valor = Decimal('0.00')
                 obj.ativos_pct_qtd = (qtd / total_qtd * 100) if total_qtd else 0
                 obj.ativos_pct_valor = (valor / total_valor * 100) if total_valor else 0
+
+            # Chart data collection
+            chart_qtd = []
+            chart_valor = []
+            for obj in ctx.get('object_list', []):
+                qtd = getattr(obj, 'ativos_count', 0) or 0
+                valor = getattr(obj, 'ativos_valor_total', None)
+                if valor is None:
+                    valor = Decimal('0.00')
+                if qtd > 0:
+                    chart_qtd.append({'label': str(obj), 'value': int(qtd)})
+                if valor > 0:
+                    chart_valor.append({'label': str(obj), 'value': float(valor)})
+            ctx['chart_data_qtd'] = json.dumps(chart_qtd)
+            ctx['chart_data_valor'] = json.dumps(chart_valor)
         return ctx
 
 
@@ -893,7 +908,7 @@ class CentroCustoListView(LoginRequiredMixin, ListView):
         ctx['update_url_name'] = 'patrimonio:centrocusto-update'
 
         user = self.request.user
-        show_metrics = bool(user.is_authenticated and (user.is_staff or user.is_superuser))
+        show_metrics = user.is_authenticated
         ctx['show_manager_metrics'] = show_metrics
 
         if show_metrics:
@@ -914,6 +929,21 @@ class CentroCustoListView(LoginRequiredMixin, ListView):
                     valor = Decimal('0.00')
                 obj.ativos_pct_qtd = (qtd / total_qtd * 100) if total_qtd else 0
                 obj.ativos_pct_valor = (valor / total_valor * 100) if total_valor else 0
+
+            # Chart data collection
+            chart_qtd = []
+            chart_valor = []
+            for obj in ctx.get('object_list', []):
+                qtd = getattr(obj, 'ativos_count', 0) or 0
+                valor = getattr(obj, 'ativos_valor_total', None)
+                if valor is None:
+                    valor = Decimal('0.00')
+                if qtd > 0:
+                    chart_qtd.append({'label': str(obj), 'value': int(qtd)})
+                if valor > 0:
+                    chart_valor.append({'label': str(obj), 'value': float(valor)})
+            ctx['chart_data_qtd'] = json.dumps(chart_qtd)
+            ctx['chart_data_valor'] = json.dumps(chart_valor)
         return ctx
 
 
