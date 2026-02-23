@@ -24,6 +24,8 @@
 
     <!-- Tailwind via CDN (dev fallback) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Suppress Tailwind CDN dev-mode orange outline on body -->
+    <style>body { outline: none !important; }</style>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -42,36 +44,53 @@
             },
         }
     </script>
-    <style type="text/tailwindcss">
+        <style type="text/tailwindcss">
         @layer components {
+            /* --- Botões --- */
             .btn-primary {
-                @apply bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-4 py-2 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 inline-flex items-center gap-1.5;
+                @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-lg px-4 py-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 inline-flex items-center gap-1.5 shadow-sm;
             }
             .btn-secondary {
-                @apply bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 rounded-lg px-4 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+                @apply bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 rounded-lg px-4 py-2 font-medium transition-all inline-flex items-center gap-1.5 shadow-sm;
             }
             .btn-danger {
-                @apply bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+                @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg px-4 py-2 font-medium transition-all inline-flex items-center gap-1.5 shadow-sm;
             }
             .btn-ghost-primary {
-                @apply text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg px-3 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+                @apply text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg px-3 py-2 font-medium transition-all inline-flex items-center gap-1.5;
             }
             .btn-ghost-secondary {
-                @apply text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg px-3 py-2 font-medium transition-colors inline-flex items-center gap-1.5;
+                @apply text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg px-3 py-2 font-medium transition-all inline-flex items-center gap-1.5;
             }
             .btn-sm { @apply text-xs px-2.5 py-1.5; }
+
+            /* --- Forms --- */
             .form-input {
-                @apply block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm;
+                @apply block w-full border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-primary-500 focus:ring-primary-500 rounded-md shadow-sm text-sm transition-colors;
             }
             .form-label { @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1; }
             .form-error { @apply mt-1 text-sm text-red-600; }
-            .card { @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 rounded-2xl p-6 shadow-lg; }
-            .glass { @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60; }
-            .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
-            .badge-success { @apply badge bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400; }
-            .badge-warning { @apply badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400; }
-            .badge-danger { @apply badge bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400; }
-            .badge-info { @apply badge bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400; }
+
+            /* --- Cards --- */
+            .card {
+                @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200;
+            }
+            .glass {
+                @apply bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/70 dark:border-slate-700/70;
+            }
+
+            /* --- Badges --- */
+            .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold; }
+            .badge-success { @apply badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400; }
+            .badge-warning { @apply badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400; }
+            .badge-danger  { @apply badge bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400; }
+            .badge-info    { @apply badge bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400; }
+            .badge-neutral { @apply badge bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400; }
+
+            /* --- Nav item active --- */
+            .nav-link-active {
+                @apply bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 font-semibold;
+            }
         }
     </style>
 
