@@ -37,7 +37,13 @@ from django.views.generic import (
 from django_filters.views import FilterView
 from auditlog.models import LogEntry
 
-from .filters import AtivoFilter, InventarioFilter, MovimentacaoFilter, InventarioItemFilter
+from .filters import (
+    AtivoFilter,
+    CentroCustoFilter,
+    InventarioFilter,
+    InventarioItemFilter,
+    MovimentacaoFilter,
+)
 from .forms import (
     AtivoForm,
     AtivoImagemForm,

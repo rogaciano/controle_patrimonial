@@ -77,12 +77,6 @@ class CentroCustoFilter(django_filters.FilterSet):
         fields = ['busca', 'empresa']
 
     def filtrar_busca(self, queryset, name, value):
-        from django.db.models import Q
-        return queryset.filter(
-            Q(nome__icontains=value)
-            | Q(codigo__icontains=value)
-        )
-
     class Meta:
         model = Ativo
         fields = [
