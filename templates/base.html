@@ -34,10 +34,10 @@
                     fontFamily: { sans: ['Figtree', 'sans-serif'] },
                     colors: {
                         primary: {
-                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
-                            300: '#7dd3fc', 400: '#38bdf8', 500: '#0ea5e9',
-                            600: '#0284c7', 700: '#0369a1', 800: '#075985',
-                            900: '#0c4a6e', 950: '#082f49',
+                            50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe',
+                            300: '#c4b5fd', 400: '#a78bfa', 500: '#8b5cf6',
+                            600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6',
+                            900: '#4c1d95', 950: '#2e1065',
                         },
                     },
                 },
@@ -48,7 +48,14 @@
         @layer components {
             /* --- Botões --- */
             .btn-primary {
-                @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-lg px-4 py-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 inline-flex items-center gap-1.5 shadow-sm;
+                @apply
+                    bg-primary-600 hover:bg-primary-700 active:bg-primary-800
+                    text-white shadow-sm
+                    dark:bg-primary-500/10 dark:border dark:border-primary-400/50 dark:text-primary-300 dark:shadow-none
+                    dark:hover:bg-primary-600 dark:hover:border-primary-600 dark:hover:text-white dark:hover:shadow-lg
+                    rounded-lg px-4 py-2 font-medium transition-all duration-200
+                    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900
+                    inline-flex items-center gap-1.5;
             }
             .btn-secondary {
                 @apply bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200 rounded-lg px-4 py-2 font-medium transition-all inline-flex items-center gap-1.5 shadow-sm;
@@ -121,8 +128,8 @@
         }
 
         .dark .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #0ea5e9;
-            /* primary-500 */
+            background-color: #8b5cf6;
+            /* primary-500 violet */
         }
 
         .dark .select2-container--default .select2-results__option[aria-selected="true"] {

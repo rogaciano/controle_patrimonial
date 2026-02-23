@@ -38,7 +38,7 @@
             if (this.currentChart) { this.currentChart.destroy(); }
             const ctx = document.getElementById('modalChartCanvas').getContext('2d');
             const isDark = document.documentElement.classList.contains('dark');
-            const palette = ['#0ea5e9','#f59e0b','#ef4444','#10b981','#8b5cf6','#14b8a6','#f97316','#6366f1','#ec4899','#84cc16','#06b6d4','#a855f7'];
+            const palette = ['#7c3aed','#10b981','#f59e0b','#ef4444','#06b6d4','#f97316','#6366f1','#14b8a6','#ec4899','#84cc16','#a78bfa','#a855f7'];
             
             this.currentChart = new Chart(ctx, {
                 type: this.chartType,
