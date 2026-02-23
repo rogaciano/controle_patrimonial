@@ -42,7 +42,9 @@ from .filters import (
     CentroCustoFilter,
     InventarioFilter,
     InventarioItemFilter,
+    LocalFisicoFilter,
     MovimentacaoFilter,
+    ResponsavelFilter,
 )
 from .forms import (
     AtivoForm,
@@ -1014,15 +1016,18 @@ class CentroCustoUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView)
         return ctx
 
 
-class LocalFisicoListView(LoginRequiredMixin, ListView):
+class LocalFisicoListView(LoginRequiredMixin, FilterView):
     model = LocalFisico
-    template_name = 'patrimonio/generic_list.html'
+    template_name = 'patrimonio/local_fisico_list.html'
     context_object_name = 'object_list'
     paginate_by = 20
+
+    filterset_class = LocalFisicoFilter
 
     def get_queryset(self):
         return (
             LocalFisico.objects.filter(ativo=True)
+            .select_related('empresa')
             .annotate(
                 ativos_count=Count(
                     'ativos',
@@ -1111,15 +1116,18 @@ class LocalFisicoUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView)
         return ctx
 
 
-class ResponsavelListView(LoginRequiredMixin, ListView):
+class ResponsavelListView(LoginRequiredMixin, FilterView):
     model = Responsavel
-    template_name = 'patrimonio/generic_list.html'
+    template_name = 'patrimonio/responsavel_list.html'
     context_object_name = 'object_list'
     paginate_by = 20
+
+    filterset_class = ResponsavelFilter
 
     def get_queryset(self):
         return (
             Responsavel.objects.filter(ativo=True)
+            .select_related('empresa')
             .annotate(
                 ativos_count=Count(
                     'ativos',

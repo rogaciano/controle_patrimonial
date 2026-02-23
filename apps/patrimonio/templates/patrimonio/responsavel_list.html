@@ -1,0 +1,50 @@
+{% extends 'patrimonio/generic_list.html' %}
+{% load widget_tweaks %}
+
+{% block extra_filters %}
+<div class="glass rounded-2xl p-4">
+    <form method="GET" class="flex items-end gap-3 flex-wrap">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Buscar</label>
+            {% render_field filter.form.busca class="form-input w-full text-sm" placeholder="Nome, Matrícula ou CPF" %}
+        </div>
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Empresa</label>
+            {% render_field filter.form.empresa class="form-input w-full text-sm select2" data-placeholder="Filtrar por empresa" %}
+        </div>
+        <div class="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+            <button type="submit" class="btn-primary w-full sm:w-auto">Filtrar</button>
+            <a href="{% url 'patrimonio:responsavel-list' %}" class="btn-ghost-secondary w-full sm:w-auto justify-center">Limpar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_headers %}
+<th class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50 hidden lg:table-cell">Empresa</th>
+{% endblock %}
+
+{% block extra_columns %}
+<td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 hidden lg:table-cell">
+    {{ obj.empresa.nome_fantasia|default:"-" }}
+</td>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                language: "pt-BR",
+                placeholder: function(){
+                    return $(this).data('placeholder');
+                },
+                allowClear: true
+            });
+        }
+    });
+</script>
+{% endblock %}

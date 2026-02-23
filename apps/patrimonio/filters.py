@@ -77,6 +77,106 @@ class CentroCustoFilter(django_filters.FilterSet):
         fields = ['busca', 'empresa']
 
     def filtrar_busca(self, queryset, name, value):
+        from django.db.models import Q
+        return queryset.filter(
+            Q(nome__icontains=value)
+            | Q(codigo__icontains=value)
+        )
+
+
+class ResponsavelFilter(django_filters.FilterSet):
+    """Filtros para listagem de responsáveis."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+        empty_label='Todas',
+    )
+
+    class Meta:
+        model = Responsavel
+        fields = ['busca', 'empresa']
+
+    def filtrar_busca(self, queryset, name, value):
+        from django.db.models import Q
+        return queryset.filter(
+            Q(nome__icontains=value)
+            | Q(cpf__icontains=value)
+            | Q(matricula__icontains=value)
+        )
+
+
+class LocalFisicoFilter(django_filters.FilterSet):
+    """Filtros para listagem de locais físicos."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+        empty_label='Todas',
+    )
+
+    class Meta:
+        model = LocalFisico
+        fields = ['busca', 'empresa']
+
+    def filtrar_busca(self, queryset, name, value):
+        from django.db.models import Q
+        return queryset.filter(
+            Q(nome__icontains=value)
+            | Q(codigo__icontains=value)
+        )
+
+
+class AtivoFilter(django_filters.FilterSet):
+    """Filtros para listagem de ativos."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelMultipleChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+    )
+    categoria = django_filters.ModelMultipleChoiceFilter(
+        queryset=CategoriaContabil.objects.filter(ativo=True),
+        label='Categoria',
+    )
+    centro_custo = django_filters.ModelChoiceFilter(
+        queryset=CentroCusto.objects.filter(ativo=True),
+        label='Centro de Custo',
+        empty_label='Todos',
+    )
+    local_fisico = django_filters.ModelMultipleChoiceFilter(
+        queryset=LocalFisico.objects.filter(ativo=True),
+        label='Local Físico',
+    )
+    responsavel = django_filters.ModelChoiceFilter(
+        queryset=Responsavel.objects.filter(ativo=True),
+        label='Responsável',
+        empty_label='Todos',
+    )
+    status = django_filters.MultipleChoiceFilter(
+        choices=Ativo.Status.choices,
+        label='Status',
+    )
+    estado_conservacao = django_filters.ChoiceFilter(
+        choices=Ativo.EstadoConservacao.choices,
+        label='Estado de Conservação',
+        null_label='Todos',
+    )
+    depreciavel = django_filters.BooleanFilter(
+        label='Depreciável',
+    )
+
     class Meta:
         model = Ativo
         fields = [
