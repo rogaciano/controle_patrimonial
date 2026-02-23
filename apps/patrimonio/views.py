@@ -909,15 +909,18 @@ class CategoriaUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return ctx
 
 
-class CentroCustoListView(LoginRequiredMixin, ListView):
+class CentroCustoListView(LoginRequiredMixin, FilterView):
     model = CentroCusto
-    template_name = 'patrimonio/generic_list.html'
+    template_name = 'patrimonio/centro_custo_list.html'
     context_object_name = 'object_list'
     paginate_by = 20
+
+    filterset_class = CentroCustoFilter
 
     def get_queryset(self):
         return (
             CentroCusto.objects.filter(ativo=True)
+            .select_related('empresa')
             .annotate(
                 ativos_count=Count(
                     'ativos',

@@ -58,6 +58,31 @@ class AtivoFilter(django_filters.FilterSet):
         label='Depreciável',
     )
 
+
+class CentroCustoFilter(django_filters.FilterSet):
+    """Filtros para listagem de centros de custo."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+        empty_label='Todas',
+    )
+
+    class Meta:
+        model = CentroCusto
+        fields = ['busca', 'empresa']
+
+    def filtrar_busca(self, queryset, name, value):
+        from django.db.models import Q
+        return queryset.filter(
+            Q(nome__icontains=value)
+            | Q(codigo__icontains=value)
+        )
+
     class Meta:
         model = Ativo
         fields = [
