@@ -323,7 +323,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        
+        empresa_id = self.request.GET.get('empresa')
         ativos_qs = Ativo.objects.filter(ativo=True).exclude(status='BAIXADO')
+        
+        if empresa_id:
+            ativos_qs = ativos_qs.filter(empresa_id=empresa_id)
+
+        from apps.core.models import Empresa
+        ctx['empresas'] = Empresa.objects.filter(ativo=True)
+        ctx['empresa_selecionada'] = int(empresa_id) if empresa_id and empresa_id.isdigit() else None
 
         # KPI 1: Valor Total
         ctx['valor_total_aquisicao'] = ativos_qs.aggregate(
@@ -661,6 +670,27 @@ class AtivoAuditExportPDFView(LoginRequiredMixin, View):
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="ativo-{ativo.numero_tombamento}-auditoria.pdf"'
         return response
+
+
+class OpcõesPorEmpresaView(LoginRequiredMixin, View):
+    """
+    Retorna Locais, Centros de Custo e Responsáveis vinculados a uma Empresa
+    específica em formato JSON para os selects dinâmicos do formulário.
+    """
+    def get(self, request, empresa_id):
+        locais = LocalFisico.objects.filter(empresa_id=empresa_id, ativo=True)
+        centros = CentroCusto.objects.filter(empresa_id=empresa_id, ativo=True)
+        responsaveis = Responsavel.objects.filter(empresa_id=empresa_id, ativo=True)
+        
+        data = {
+            'locais': [
+                {'id': l.id, 'text': f"{l.edificio} - {l.sala} ({l.descricao})" if l.descricao else f"{l.edificio} - {l.sala}"}
+                for l in locais
+            ],
+            'centros': [{'id': c.id, 'text': f"{c.codigo} - {c.nome}"} for c in centros],
+            'responsaveis': [{'id': r.id, 'text': r.nome} for r in responsaveis],
+        }
+        return JsonResponse(data)
 
 
 class AtivoUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -1257,7 +1287,7 @@ class InventarioListView(LoginRequiredMixin, FilterView):
     def get_queryset(self):
         return (
             Inventario.objects.filter(ativo=True)
-            .select_related('responsavel')
+            .select_related('responsavel', 'empresa')
             .order_by('-data_inicio')
         )
 

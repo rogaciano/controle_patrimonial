@@ -1,12 +1,17 @@
 <!-- Ativo Filters Partial -->
 {% load widget_tweaks %}
 <div class="glass rounded-2xl p-4 mb-6">
-    <form method="GET" action="{% url 'patrimonio:ativo-list' %}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+    <form method="GET" action="{% url 'patrimonio:ativo-list' %}" class="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div>
             <label
                 class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Busca</label>
             <input type="text" name="busca" value="{{ request.GET.busca }}" placeholder="Tombamento, descrição..."
                 class="form-input w-full text-sm h-[38px]">
+        </div>
+        <div>
+            <label
+                class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 shadow-sm">Empresa</label>
+            {% render_field filter.form.empresa class="form-input select2-multiple w-full text-sm" %}
         </div>
         <div>
             <label

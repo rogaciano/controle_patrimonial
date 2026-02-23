@@ -76,19 +76,19 @@ class CategoriaContabilForm(_BaseForm):
 class CentroCustoForm(_BaseForm):
     class Meta:
         model = CentroCusto
-        fields = ['codigo', 'nome', 'departamento', 'unidade']
+        fields = ['empresa', 'codigo', 'nome', 'departamento', 'unidade']
 
 
 class LocalFisicoForm(_BaseForm):
     class Meta:
         model = LocalFisico
-        fields = ['codigo', 'edificio', 'andar', 'sala', 'descricao']
+        fields = ['empresa', 'codigo', 'edificio', 'andar', 'sala', 'descricao']
 
 
 class ResponsavelForm(_BaseForm):
     class Meta:
         model = Responsavel
-        fields = ['user', 'nome', 'matricula', 'cargo', 'email', 'telefone']
+        fields = ['empresa', 'user', 'nome', 'matricula', 'cargo', 'email', 'telefone']
 
 
 # =============================================================================
@@ -100,7 +100,7 @@ class AtivoForm(_BaseForm):
     class Meta:
         model = Ativo
         fields = [
-            'numero_tombamento', 'descricao_detalhada', 'categoria',
+            'empresa', 'numero_tombamento', 'descricao_detalhada', 'categoria',
             'centro_custo', 'local_fisico', 'responsavel',
             'data_aquisicao', 'valor_aquisicao', 'valor_residual',
             'vida_util_meses', 'estado_conservacao',
@@ -174,7 +174,7 @@ class MotivoBaixaForm(_BaseForm):
 class InventarioForm(_BaseForm):
     class Meta:
         model = Inventario
-        fields = ['codigo', 'data_inicio', 'data_fim', 'responsavel', 'observacoes']
+        fields = ['empresa', 'codigo', 'data_inicio', 'data_fim', 'responsavel', 'observacoes']
         widgets = {
             'data_inicio': forms.DateInput(
                 attrs={'type': 'date'},

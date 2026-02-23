@@ -3,6 +3,7 @@
 import django_filters
 from django.db import models
 
+from apps.core.models import Empresa
 from .models import (
     Ativo,
     CategoriaContabil,
@@ -21,6 +22,10 @@ class AtivoFilter(django_filters.FilterSet):
     busca = django_filters.CharFilter(
         method='filtrar_busca',
         label='Buscar',
+    )
+    empresa = django_filters.ModelMultipleChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
     )
     categoria = django_filters.ModelMultipleChoiceFilter(
         queryset=CategoriaContabil.objects.filter(ativo=True),
@@ -56,7 +61,7 @@ class AtivoFilter(django_filters.FilterSet):
     class Meta:
         model = Ativo
         fields = [
-            'busca', 'categoria', 'centro_custo', 'local_fisico',
+            'empresa', 'busca', 'categoria', 'centro_custo', 'local_fisico',
             'responsavel', 'status', 'estado_conservacao', 'depreciavel',
         ]
 
@@ -106,6 +111,14 @@ class MovimentacaoFilter(django_filters.FilterSet):
 class InventarioFilter(django_filters.FilterSet):
     """Filtros para listagem de inventários."""
 
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelMultipleChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+    )
     status = django_filters.ChoiceFilter(
         choices=Inventario.StatusInventario.choices,
         label='Status',
@@ -114,7 +127,13 @@ class InventarioFilter(django_filters.FilterSet):
 
     class Meta:
         model = Inventario
-        fields = ['status']
+        fields = ['busca', 'empresa', 'status']
+
+    def filtrar_busca(self, queryset, name, value):
+        return queryset.filter(
+            models.Q(codigo__icontains=value)
+            | models.Q(observacoes__icontains=value)
+        )
 
 
 class InventarioItemFilter(django_filters.FilterSet):

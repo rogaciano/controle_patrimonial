@@ -74,7 +74,14 @@ class CategoriaContabil(BaseModel):
 
 class CentroCusto(BaseModel):
     """Estrutura organizacional (departamento/unidade)."""
-
+    
+    empresa = models.ForeignKey(
+        'core.Empresa',
+        on_delete=models.PROTECT,
+        default=1,
+        verbose_name='Empresa',
+        related_name='centros_custo',
+    )
     codigo = models.CharField(
         max_length=20,
         unique=True,
@@ -107,6 +114,13 @@ class CentroCusto(BaseModel):
 class LocalFisico(BaseModel):
     """Localização física detalhada (edifício, andar, sala)."""
 
+    empresa = models.ForeignKey(
+        'core.Empresa',
+        on_delete=models.PROTECT,
+        default=1,
+        verbose_name='Empresa',
+        related_name='locais_fisicos',
+    )
     codigo = models.CharField(
         max_length=20,
         unique=True,
@@ -156,6 +170,13 @@ class LocalFisico(BaseModel):
 class Responsavel(BaseModel):
     """Colaborador que detém a guarda de bens patrimoniais."""
 
+    empresa = models.ForeignKey(
+        'core.Empresa',
+        on_delete=models.PROTECT,
+        default=1,
+        verbose_name='Empresa',
+        related_name='responsaveis',
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -227,6 +248,13 @@ class Ativo(BaseModel):
         EM_PROCESSO_BAIXA = 'EM_PROCESSO_BAIXA', 'Em Processo de Baixa'
         BAIXADO = 'BAIXADO', 'Baixado'
 
+    empresa = models.ForeignKey(
+        'core.Empresa',
+        on_delete=models.PROTECT,
+        default=1,
+        verbose_name='Empresa',
+        related_name='ativos',
+    )
     numero_tombamento = models.CharField(
         max_length=30,
         unique=True,
@@ -701,7 +729,16 @@ class Inventario(BaseModel):
     codigo = models.CharField(
         max_length=20,
         unique=True,
+        blank=True,
         verbose_name='Código',
+        help_text='Deixe em branco para gerar automaticamente (DDMMYYHHMM)',
+    )
+    empresa = models.ForeignKey(
+        'core.Empresa',
+        on_delete=models.PROTECT,
+        default=1,
+        related_name='inventarios',
+        verbose_name='Empresa',
     )
     data_inicio = models.DateField(
         verbose_name='Data de Início',
@@ -739,6 +776,13 @@ class Inventario(BaseModel):
 
     def get_absolute_url(self) -> str:
         return reverse('patrimonio:inventario-detail', kwargs={'pk': self.pk})
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            from django.utils import timezone
+            # DDMMYYHHMM
+            self.codigo = timezone.localtime().strftime('%d%m%y%H%M')
+        super().save(*args, **kwargs)
 
 
 class InventarioItem(models.Model):

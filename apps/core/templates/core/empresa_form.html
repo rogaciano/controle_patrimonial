@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+{% if object %}Editar Empresa: {{ object.nome_fantasia }}{% else %}Nova Empresa{% endif %} - Controle Patrimonial
+{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+            {% if object %}Editar Empresa{% else %}Nova Empresa{% endif %}
+        </h2>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <form method="post" class="glass rounded-2xl p-6 shadow-lg">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="md:col-span-2">
+                <label class="form-label">Razão Social <span class="text-red-500">*</span></label>
+                {% render_field form.nome_razao class="form-input" %}
+                {% if form.nome_razao.errors %}<div class="form-error">{{ form.nome_razao.errors }}</div>{% endif %}
+            </div>
+
+            <div>
+                <label class="form-label">Nome Fantasia <span class="text-red-500">*</span></label>
+                {% render_field form.nome_fantasia class="form-input" %}
+                {% if form.nome_fantasia.errors %}<div class="form-error">{{ form.nome_fantasia.errors }}</div>{% endif %}
+            </div>
+
+            <div>
+                <label class="form-label">CNPJ <span class="text-red-500">*</span></label>
+                {% render_field form.cnpj class="form-input" x-mask="99.999.999/9999-99" placeholder="00.000.000/0000-00" %}
+                {% if form.cnpj.errors %}<div class="form-error">{{ form.cnpj.errors }}</div>{% endif %}
+            </div>
+
+            <div>
+                <label class="form-label">Cidade <span class="text-red-500">*</span></label>
+                {% render_field form.cidade class="form-input" %}
+                {% if form.cidade.errors %}<div class="form-error">{{ form.cidade.errors }}</div>{% endif %}
+            </div>
+
+            <div>
+                <label class="form-label">UF <span class="text-red-500">*</span></label>
+                {% render_field form.uf class="form-input" %}
+                {% if form.uf.errors %}<div class="form-error">{{ form.uf.errors }}</div>{% endif %}
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="form-label">Endereço Completo</label>
+                {% render_field form.endereco class="form-input" rows="2" %}
+                {% if form.endereco.errors %}<div class="form-error">{{ form.endereco.errors }}</div>{% endif %}
+            </div>
+
+            <div class="flex items-center gap-2 mt-2">
+                {% render_field form.matriz class="form-checkbox h-5 w-5 text-primary-600 rounded" %}
+                <label class="font-medium text-slate-700 dark:text-slate-300">Esta empresa é a Matriz?</label>
+            </div>
+            
+            <div class="flex items-center gap-2 mt-2">
+                {% render_field form.ativo class="form-checkbox h-5 w-5 text-primary-600 rounded" %}
+                <label class="font-medium text-slate-700 dark:text-slate-300">Empresa Ativa no Sistema</label>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 text-red-600 p-3 rounded mb-4">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <a href="{% url 'core:empresa-list' %}" class="btn-ghost-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">
+                Salvar
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add Alpine Mask for CNPJ formatting (already loading alpine core in base.html) -->
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/mask@3.x.x/dist/cdn.min.js"></script>
+{% endblock %}

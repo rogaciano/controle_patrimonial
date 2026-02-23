@@ -25,10 +25,20 @@
     <!-- Filters -->
     <div class="glass rounded-2xl p-4 mb-6 max-w-sm">
         <form method="GET" class="flex items-end gap-3">
-            <div class="flex-1">
+            <div class="flex-1 max-w-[150px]">
                 <label
                     class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Status</label>
                 {% render_field filter.form.status class="form-input w-full text-sm" %}
+            </div>
+            <div class="flex-1">
+                <label
+                    class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Buscar</label>
+                {% render_field filter.form.busca class="form-input w-full text-sm" placeholder="Código ou Descrição" %}
+            </div>
+            <div class="flex-1">
+                <label
+                    class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 ml-1">Empresa</label>
+                {% render_field filter.form.empresa class="form-input w-full text-sm select2" data-placeholder="Filtrar por empresa" %}
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="btn-primary btn-sm">Filtrar</button>
@@ -44,6 +54,9 @@
                         <th
                             class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
                             Codigo</th>
+                        <th
+                            class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50 hidden md:table-cell">
+                            Empresa</th>
                         <th
                             class="text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-6 py-3 bg-slate-50/50 dark:bg-slate-800/50">
                             Responsavel</th>
@@ -67,6 +80,10 @@
                                 class="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline transition-colors">
                                 {{ inv.codigo }}
                             </a>
+                        </td>
+                        <td
+                            class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 hidden md:table-cell">
+                            {{ inv.empresa.nome_fantasia|default:"-" }}
                         </td>
                         <td
                             class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 border-t border-slate-100 dark:border-slate-800">
@@ -113,4 +130,21 @@
 
     {% include 'components/_pagination.html' %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof jQuery !== 'undefined' && $.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                language: "pt-BR",
+                placeholder: function(){
+                    $(this).data('placeholder');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

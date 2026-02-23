@@ -6,7 +6,14 @@
     <div>
         <h3 class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">Identificação
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="form-label">Empresa <span class="text-red-500">*</span></label>
+                {% render_field form.empresa class="form-input select2" %}
+                {% for error in form.empresa.errors %}
+                <p class="form-error">{{ error }}</p>
+                {% endfor %}
+            </div>
             <div>
                 <label class="form-label">Nº Tombamento <span class="text-red-500">*</span></label>
                 {% render_field form.numero_tombamento class="form-input" placeholder="Ex: TOMB00001" %}
@@ -132,6 +139,81 @@
         <div class="mt-4">
             <label class="form-label">Observações</label>
             {% render_field form.observacoes class="form-input" rows="2" placeholder="Observações adicionais..." %}
-        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof jQuery !== 'undefined') {
+            (function($) {
+                $(document).ready(function() {
+                    const $empresaSelect = $('#id_empresa');
+                    const $localFisico = $('#id_local_fisico');
+                    const $centroCusto = $('#id_centro_custo');
+                    const $responsavel = $('#id_responsavel');
+
+                    function loadDepenentOptions(empresaId) {
+                        if (!empresaId) {
+                            $localFisico.empty().trigger('change');
+                            $centroCusto.empty().trigger('change');
+                            $responsavel.empty().trigger('change');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: '/patrimonio/api/opcoes-por-empresa/' + empresaId + '/',
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                // Guarda valor atual
+                                const currentLocal = $localFisico.val();
+                                const currentCentro = $centroCusto.val();
+                                const currentResp = $responsavel.val();
+
+                                $localFisico.empty().append(new Option('', '', false, false));
+                                data.locais.forEach(function(item) {
+                                    $localFisico.append(new Option(item.text, item.id, false, false));
+                                });
+                                $localFisico.val(currentLocal).trigger('change');
+
+                                $centroCusto.empty().append(new Option('', '', false, false));
+                                data.centros.forEach(function(item) {
+                                    $centroCusto.append(new Option(item.text, item.id, false, false));
+                                });
+                                $centroCusto.val(currentCentro).trigger('change');
+
+                                $responsavel.empty().append(new Option('', '', false, false));
+                                data.responsaveis.forEach(function(item) {
+                                    $responsavel.append(new Option(item.text, item.id, false, false));
+                                });
+                                $responsavel.val(currentResp).trigger('change');
+                            }
+                        });
+                    }
+
+                    // Se usar select2:
+                    if ($.fn.select2) {
+                        $empresaSelect.select2({theme: 'bootstrap-5', width: '100%'});
+                        $localFisico.select2({theme: 'bootstrap-5', width: '100%'});
+                        $centroCusto.select2({theme: 'bootstrap-5', width: '100%'});
+                        $responsavel.select2({theme: 'bootstrap-5', width: '100%'});
+                        
+                        $empresaSelect.on('select2:select', function (e) {
+                            loadDepenentOptions(e.params.data.id);
+                        });
+                    } else {
+                        $empresaSelect.on('change', function() {
+                            loadDepenentOptions($(this).val());
+                        });
+                    }
+
+                    // Inicializa as dependencias se o form em edit tiver alguma selecionada
+                    if ($empresaSelect.val()) {
+                        // Não resetta valores no load initial
+                        loadDepenentOptions($empresaSelect.val());
+                    }
+                });
+            })(jQuery);
+        }
+    });
+</script>

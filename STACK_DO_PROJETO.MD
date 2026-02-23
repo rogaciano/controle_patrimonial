@@ -24,7 +24,9 @@ Criar um sistema ERP modular para gestão de [processo/negócio específico], in
 - **jQuery 3.6+** (para componentes complexos como Select2)
 - **Select2** (dropdowns avançados)
 - **Chart.js 4.x** (gráficos e dashboards)
+- **Select2** (dropdowns avançados com jQuery)
 - **Django Templates** (templating engine nativa)
+- **Lucide Icons / Heroicons** (biblioteca de ícones consistente)
 
 ### 🎨 Design Tokens (Identidade Visual Centralizada)
 
@@ -799,8 +801,53 @@ class ProdutoDeleteView(LoginRequiredMixin, DeleteView):
 │ │ Data | Descrição | Status | Ações       │ │
 │ └─────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────┤
-│ Seção 3: Timeline / Auditoria (opcional)    │
+│ Seção 3: Timeline / Auditoria (Modal Alpine)│
+│ [Botão Ver Auditoria] -> Abre Modal Custom │
 └─────────────────────────────────────────────┘
+```
+
+##### 🔍 PADRÃO DE AUDITORIA VISUAL (Modal Alpine.js)
+
+Para cada entidade auditada, incluir um modal que consome os dados do `django-auditlog`:
+
+```html
+<!-- No detailView.html -->
+<div x-data="{ openAuditModal: false }">
+    <button @click="openAuditModal = true" class="btn-secondary btn-sm">
+        Ver histórico de auditoria
+    </button>
+
+    <template x-teleport="body">
+        <div x-show="openAuditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @click="openAuditModal = false"></div>
+            <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden">
+                <!-- Tabela de eventos (Data, Usuário, Ação, Campo, De/Para) -->
+                {% include 'core/partials/_audit_table.html' with eventos=eventos %}
+            </div>
+        </div>
+    </template>
+</div>
+```
+
+##### 🖼️ PADRÃO DE GALERIA E LIGHTBOX
+
+Para entidades com fotos:
+1. Grid de `aspect-square` com hover effects.
+2. Lightbox via Alpine.js para visualização em tela cheia.
+3. Badge indicando o tipo da imagem (Aquisição, Dano, Inventário).
+
+##### 🔄 PADRÃO DE MÁQUINA DE ESTADOS (Status)
+
+Sempre que a mudança de status exigir regra de negócio:
+1. **Configuração**: Definir transições permitidas no Model ou Service.
+2. **Interface**: Modal de confirmação solicitando obrigatoriamente **Motivo** (choice) e **Justificativa** (texto).
+3. **Persistência**: Gravar o histórico da mudança para auditoria interna rápida (além do auditlog).
+
+##### 📊 PADRÃO DE DASHBOARD ENRIQUECIDO
+
+1. **KPI Cards**: Valor total, contagens, conformidade (com ícones semânticos).
+2. **Gráficos**: Pelo menos um gráfico de distribuição (Doughnut) e um de tendência (Bar/Line).
+3. **Ações Rápidas**: Atalhos claros para os processos principais do sistema.
 ```
 
 ##### Mapeamento de Relacionamentos por Entidade:

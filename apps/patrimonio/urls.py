@@ -19,6 +19,7 @@ urlpatterns = [
     path('ativos/<int:pk>/excluir/', views.AtivoDeleteView.as_view(), name='ativo-delete'),
     path('ativos/<int:pk>/auditoria/exportar/csv/', views.AtivoAuditExportCSVView.as_view(), name='ativo-auditoria-export-csv'),
     path('ativos/<int:pk>/auditoria/exportar/pdf/', views.AtivoAuditExportPDFView.as_view(), name='ativo-auditoria-export-pdf'),
+    path('api/opcoes-por-empresa/<int:empresa_id>/', views.OpcõesPorEmpresaView.as_view(), name='api-opcoes-empresa'),
 
     # --- Galeria de Imagens ---
     path('ativos/<int:pk>/imagens/adicionar/', views.AtivoImagemCreateView.as_view(), name='ativo-imagem-create'),

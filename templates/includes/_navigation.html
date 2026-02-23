@@ -38,6 +38,8 @@
                         </button>
                         <div x-show="dropOpen" x-transition
                             class="absolute left-0 mt-2 w-48 rounded-xl bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
+                            <a href="{% url 'core:empresa-list' %}"
+                                class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Empresas</a>
                             <a href="{% url 'patrimonio:categoria-list' %}"
                                 class="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Categorias</a>
                             <a href="{% url 'patrimonio:centrocusto-list' %}"
@@ -101,6 +103,8 @@
             <a href="{% url 'patrimonio:inventario-list' %}"
                 class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">Inventários</a>
             <hr class="border-slate-200 dark:border-slate-700 my-2">
+            <a href="{% url 'core:empresa-list' %}"
+                class="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Empresas</a>
             <a href="{% url 'patrimonio:categoria-list' %}"
                 class="block px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Categorias</a>
             <a href="{% url 'patrimonio:centrocusto-list' %}"
