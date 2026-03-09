@@ -86,8 +86,16 @@
               class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Arquivo *</label>
-                {{ imagem_form.imagem }}
+                <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Arquivo(s) *</label>
+                <input type="file" name="imagem" multiple accept="image/*"
+                       class="block w-full text-sm text-slate-500 dark:text-slate-400
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-lg file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-primary-50 file:text-primary-700
+                              dark:file:bg-primary-900/30 dark:file:text-primary-300
+                              hover:file:bg-primary-100 dark:hover:file:bg-primary-900/50
+                              cursor-pointer" />
             </div>
             <div>
                 <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Descrição</label>

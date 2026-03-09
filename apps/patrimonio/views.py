@@ -755,24 +755,38 @@ class AtivoDeleteView(LoginRequiredMixin, DeleteView):
 # =============================================================================
 
 
-class AtivoImagemCreateView(LoginRequiredMixin, CreateView):
-    """Upload de imagem para a galeria do ativo."""
+class AtivoImagemCreateView(LoginRequiredMixin, View):
+    """Upload de imagem (ou múltiplas imagens) para a galeria do ativo."""
 
-    model = AtivoImagem
-    form_class = AtivoImagemForm
+    def post(self, request, pk):
+        ativo = get_object_or_404(Ativo, pk=pk)
+        files = request.FILES.getlist('imagem')
+        if not files:
+            messages.error(request, 'Nenhuma imagem selecionada.')
+            return redirect('patrimonio:ativo-detail', pk=pk)
 
-    def form_valid(self, form):
-        ativo = get_object_or_404(Ativo, pk=self.kwargs['pk'])
-        img = form.save(commit=False)
-        img.ativo = ativo
-        img.registrado_por = self.request.user
-        img.save()
-        messages.success(self.request, 'Imagem adicionada com sucesso!')
-        return redirect('patrimonio:ativo-detail', pk=ativo.pk)
+        descricao = request.POST.get('descricao', '')
+        tipo = request.POST.get('tipo', AtivoImagem.TipoImagem.OUTRO)
+        principal = request.POST.get('principal') == 'on'
 
-    def form_invalid(self, form):
-        messages.error(self.request, 'Erro ao enviar imagem. Verifique os campos.')
-        return redirect('patrimonio:ativo-detail', pk=self.kwargs['pk'])
+        count = 0
+        for f in files:
+            img = AtivoImagem(
+                ativo=ativo,
+                imagem=f,
+                descricao=descricao,
+                tipo=tipo,
+                principal=principal if count == 0 else False,
+                registrado_por=request.user,
+            )
+            img.save()
+            count += 1
+
+        if count == 1:
+            messages.success(request, 'Imagem adicionada com sucesso!')
+        else:
+            messages.success(request, f'{count} imagens adicionadas com sucesso!')
+        return redirect('patrimonio:ativo-detail', pk=pk)
 
 
 class AtivoImagemDeleteView(LoginRequiredMixin, View):

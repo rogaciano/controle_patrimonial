@@ -138,63 +138,106 @@
                             <span class="text-slate-400">—</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-3 text-left">
+                        <td class="px-6 py-3 text-left" x-data="{ showEvidencias: false }">
                             {% if item.evidencias_list %}
-                            <a href="{% url 'patrimonio:inventario-item-evidencias' item.pk %}"
-                                class="btn-ghost-secondary btn-sm">Ver imagens ({{ item.evidencias_list|length }})</a>
-                            {% if item.evidencias_list.0.descricao %}
-                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                {{ item.evidencias_list.0.descricao }}
+                            <button @click="showEvidencias = !showEvidencias" class="btn-ghost-secondary btn-sm">
+                                <span x-text="showEvidencias ? 'Ocultar' : 'Ver'"></span> ({{ item.evidencias_list|length }})
+                            </button>
+                            <!-- Thumbnails inline -->
+                            <div x-show="showEvidencias" x-collapse class="mt-2 flex flex-wrap gap-2">
+                                {% for ev in item.evidencias_list %}
+                                <a href="{{ ev.arquivo.url }}" target="_blank" class="group relative">
+                                    <img src="{{ ev.arquivo.url }}" alt="{{ ev.descricao|default:'Evidência' }}"
+                                         class="w-16 h-16 object-cover rounded-lg border-2 border-slate-200 dark:border-slate-700 hover:border-primary-500 transition-colors" />
+                                    {% if ev.tipo == 'AVARIA' %}
+                                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 9v2m0 4h.01"></path>
+                                        </svg>
+                                    </span>
+                                    {% endif %}
+                                </a>
+                                {% endfor %}
                             </div>
-                            {% endif %}
+                            {% else %}
+                            <span class="text-slate-400 text-xs">Sem evidências</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-3 text-right">
+                        <td class="px-6 py-3 text-right" x-data="{ showForm: false }">
                             {% if inventario.status == 'EM_ANDAMENTO' %}
-
-                            <button x-show="presenca == 'NAO_LOCALIZADO'" @click="toggle()" :disabled="loading"
-                                class="btn-ghost-success btn-sm group">
-                                <svg x-show="!loading" class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <svg x-show="loading" class="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                                Confirmar
-                            </button>
-                            <button x-show="presenca == 'LOCALIZADO'" @click="toggle()" :disabled="loading"
-                                class="btn-ghost-danger btn-sm group">
-                                <svg x-show="!loading" class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                <svg x-show="loading" class="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                                Desmarcar
-                            </button>
-                            <form method="post"
-                                action="{% url 'patrimonio:inventario-item-evidencia-avaria-create' item.pk %}"
-                                enctype="multipart/form-data" class="inline">
-                                {% csrf_token %}
-                                <input type="file" name="arquivo" accept="image/*" class="hidden"
-                                    onchange="this.form.submit()" />
-                                <input type="hidden" name="descricao" value="" />
-                                <button type="button" class="btn-secondary btn-sm"
-                                    onclick="var d = prompt('Descrição da avaria:'); if (d === null) { return; } this.form.querySelector('input[name=descricao]').value = d; this.form.querySelector('input[type=file]').click();">Registrar
-                                    avaria</button>
-                            </form>
+                            <div class="flex items-center justify-end gap-2 flex-wrap">
+                                <button x-show="presenca == 'NAO_LOCALIZADO'" @click="toggle()" :disabled="loading"
+                                    class="btn-ghost-success btn-sm group">
+                                    <svg x-show="!loading" class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <svg x-show="loading" class="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    Confirmar
+                                </button>
+                                <button x-show="presenca == 'LOCALIZADO'" @click="toggle()" :disabled="loading"
+                                    class="btn-ghost-danger btn-sm group">
+                                    <svg x-show="!loading" class="w-4 h-4 mr-1 group-hover:scale-110 transition-transform"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    <svg x-show="loading" class="animate-spin w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    Desmarcar
+                                </button>
+                                <button @click="showForm = !showForm" class="btn-secondary btn-sm">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    <span x-text="showForm ? 'Cancelar' : 'Registrar'"></span>
+                                </button>
+                            </div>
+                            <!-- Formulário inline de evidência -->
+                            <div x-show="showForm" x-collapse class="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-left">
+                                <form method="post" action="{% url 'patrimonio:inventario-item-evidencia-avaria-create' item.pk %}"
+                                      enctype="multipart/form-data" class="space-y-3">
+                                    {% csrf_token %}
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Foto da avaria *</label>
+                                        <input type="file" name="arquivo" accept="image/*" required
+                                               class="block w-full text-sm text-slate-500 dark:text-slate-400
+                                                      file:mr-3 file:py-1.5 file:px-3
+                                                      file:rounded-lg file:border-0
+                                                      file:text-xs file:font-semibold
+                                                      file:bg-red-50 file:text-red-700
+                                                      dark:file:bg-red-900/30 dark:file:text-red-300
+                                                      hover:file:bg-red-100 dark:hover:file:bg-red-900/50
+                                                      cursor-pointer" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Descrição</label>
+                                        <input type="text" name="descricao" maxlength="200" placeholder="Ex: Tela trincada, falta parafuso..."
+                                               class="block w-full text-sm border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg px-3 py-1.5 focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <button type="submit" class="btn-danger btn-sm w-full">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                        Registrar Avaria
+                                    </button>
+                                </form>
+                            </div>
                             {% endif %}
                         </td>
                     </tr>
