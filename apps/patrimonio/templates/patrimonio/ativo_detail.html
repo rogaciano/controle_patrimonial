@@ -14,8 +14,7 @@
         </div>
         <div class="flex items-center gap-2">
             {% if can_change_asset_status %}
-            <button type="button" id="open-status-modal-button" class="btn-secondary btn-sm" {% if not
-                status_transicoes_permitidas %}disabled{% endif %}>
+            <button type="button" id="open-status-modal-button" class="btn-secondary btn-sm" {% if not status_transicoes_permitidas %}disabled{% endif %}>
                 Alterar o status
             </button>
             {% endif %}
