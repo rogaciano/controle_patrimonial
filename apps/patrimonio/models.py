@@ -235,6 +235,11 @@ class Responsavel(BaseModel):
 class Ativo(BaseModel):
     """Bem patrimonial — entidade central do sistema."""
 
+    class TipoAtivo(models.TextChoices):
+        EQUIPAMENTO = 'EQUIPAMENTO', 'Móvel/Equipamento'
+        IMOVEL = 'IMOVEL', 'Imóvel'
+        VEICULO = 'VEICULO', 'Veículo'
+
     class EstadoConservacao(models.TextChoices):
         NOVO = 'NOVO', 'Novo'
         BOM = 'BOM', 'Bom'
@@ -248,6 +253,13 @@ class Ativo(BaseModel):
         EM_PROCESSO_BAIXA = 'EM_PROCESSO_BAIXA', 'Em Processo de Baixa'
         BAIXADO = 'BAIXADO', 'Baixado'
 
+    tipo = models.CharField(
+        max_length=15,
+        choices=TipoAtivo.choices,
+        default=TipoAtivo.EQUIPAMENTO,
+        verbose_name='Tipo de Ativo',
+        db_index=True,
+    )
     empresa = models.ForeignKey(
         'core.Empresa',
         on_delete=models.PROTECT,
@@ -1003,6 +1015,214 @@ class MotivoBaixa(models.Model):
 
 
 # =============================================================================
+# IMÓVEL (HERANÇA MULTI-TABELA)
+# =============================================================================
+
+
+class Imovel(Ativo):
+    """Imóvel patrimonial — herda todos os campos de Ativo."""
+
+    class TipoImovel(models.TextChoices):
+        TERRENO = 'TERRENO', 'Terreno'
+        PREDIO = 'PREDIO', 'Prédio'
+        SALA = 'SALA', 'Sala Comercial'
+        GALPAO = 'GALPAO', 'Galpão'
+        APARTAMENTO = 'APARTAMENTO', 'Apartamento'
+        CASA = 'CASA', 'Casa'
+        LOTE = 'LOTE', 'Lote'
+        OUTRO = 'OUTRO', 'Outro'
+
+    tipo_imovel = models.CharField(
+        max_length=15,
+        choices=TipoImovel.choices,
+        verbose_name='Tipo de Imóvel',
+    )
+    matricula_registro = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name='Matrícula/Registro',
+        help_text='Número da matrícula no cartório de registro de imóveis.',
+    )
+    cartorio = models.CharField(
+        max_length=150,
+        blank=True,
+        default='',
+        verbose_name='Cartório',
+    )
+    area_total_m2 = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Área Total (m²)',
+    )
+    endereco_completo = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Endereço Completo',
+    )
+    numero_iptu = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
+        verbose_name='Nº Inscrição IPTU',
+    )
+
+    class Meta:
+        verbose_name = 'Imóvel'
+        verbose_name_plural = 'Imóveis'
+
+    def __str__(self) -> str:
+        return f'{self.numero_tombamento} - {self.get_tipo_imovel_display()} - {self.descricao_detalhada[:50]}'
+
+    def get_absolute_url(self) -> str:
+        return reverse('patrimonio:imovel-detail', kwargs={'pk': self.pk})
+
+    def save(self, *args, **kwargs) -> None:
+        self.tipo = Ativo.TipoAtivo.IMOVEL
+        super().save(*args, **kwargs)
+
+    @property
+    def situacao_atual(self):
+        """Retorna a situação mais recente do imóvel."""
+        return self.situacoes.filter(ativo=True).order_by('-data_inicio').first()
+
+
+class SituacaoImovel(BaseModel):
+    """Acompanhamento de situação/ocorrência de um imóvel."""
+
+    class Situacao(models.TextChoices):
+        DISPONIVEL = 'DISPONIVEL', 'Disponível'
+        ALUGADO = 'ALUGADO', 'Alugado'
+        CEDIDO = 'CEDIDO', 'Cedido'
+        EM_REFORMA = 'EM_REFORMA', 'Em Reforma'
+        FECHADO = 'FECHADO', 'Fechado'
+        EM_USO_PROPRIO = 'EM_USO_PROPRIO', 'Em Uso Próprio'
+        OUTRO = 'OUTRO', 'Outro'
+
+    imovel = models.ForeignKey(
+        Imovel,
+        on_delete=models.CASCADE,
+        related_name='situacoes',
+        verbose_name='Imóvel',
+    )
+    situacao = models.CharField(
+        max_length=15,
+        choices=Situacao.choices,
+        verbose_name='Situação',
+    )
+    data_inicio = models.DateField(
+        verbose_name='Data de Início',
+    )
+    data_fim = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Data de Término',
+    )
+    observacoes = models.TextField(
+        blank=True,
+        default='',
+        verbose_name='Observações',
+    )
+    registrado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='situacoes_imovel_registradas',
+        verbose_name='Registrado por',
+    )
+
+    class Meta:
+        ordering = ['-data_inicio', '-criado_em']
+        verbose_name = 'Situação do Imóvel'
+        verbose_name_plural = 'Situações dos Imóveis'
+
+    def __str__(self) -> str:
+        return f'{self.imovel.numero_tombamento} - {self.get_situacao_display()} ({self.data_inicio})'
+
+
+# =============================================================================
+# VEÍCULO (HERANÇA MULTI-TABELA)
+# =============================================================================
+
+
+class Veiculo(Ativo):
+    """Veículo patrimonial — herda todos os campos de Ativo."""
+
+    class TipoCombustivel(models.TextChoices):
+        GASOLINA = 'GASOLINA', 'Gasolina'
+        ETANOL = 'ETANOL', 'Etanol'
+        FLEX = 'FLEX', 'Flex'
+        DIESEL = 'DIESEL', 'Diesel'
+        ELETRICO = 'ELETRICO', 'Elétrico'
+        HIBRIDO = 'HIBRIDO', 'Híbrido'
+
+    placa = models.CharField(
+        max_length=10,
+        unique=True,
+        verbose_name='Placa',
+        help_text='Formato Mercosul ou antigo (ex: ABC1D23 ou ABC-1234)',
+    )
+    renavam = models.CharField(
+        max_length=20,
+        unique=True,
+        blank=True,
+        default='',
+        verbose_name='RENAVAM',
+    )
+    chassi = models.CharField(
+        max_length=25,
+        blank=True,
+        default='',
+        verbose_name='Chassi',
+    )
+    marca_modelo = models.CharField(
+        max_length=100,
+        verbose_name='Marca/Modelo',
+        help_text='Ex: Fiat Uno, Toyota Hilux',
+    )
+    ano_fabricacao = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Ano de Fabricação',
+    )
+    ano_modelo = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Ano do Modelo',
+    )
+    cor = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
+        verbose_name='Cor',
+    )
+    combustivel = models.CharField(
+        max_length=10,
+        choices=TipoCombustivel.choices,
+        default=TipoCombustivel.FLEX,
+        verbose_name='Combustível',
+    )
+
+    class Meta:
+        verbose_name = 'Veículo'
+        verbose_name_plural = 'Veículos'
+
+    def __str__(self) -> str:
+        return f'{self.placa} - {self.marca_modelo}'
+
+    def get_absolute_url(self) -> str:
+        return reverse('patrimonio:veiculo-detail', kwargs={'pk': self.pk})
+
+    def save(self, *args, **kwargs) -> None:
+        self.tipo = Ativo.TipoAtivo.VEICULO
+        self.placa = self.placa.upper().strip()
+        super().save(*args, **kwargs)
+
+
+# =============================================================================
 # REGISTRO NO AUDITLOG
 # =============================================================================
 
@@ -1016,3 +1236,6 @@ auditlog.register(Movimentacao)
 auditlog.register(Inventario)
 auditlog.register(MotivoBaixa)
 auditlog.register(AtivoImagem)
+auditlog.register(Imovel)
+auditlog.register(SituacaoImovel)
+auditlog.register(Veiculo)

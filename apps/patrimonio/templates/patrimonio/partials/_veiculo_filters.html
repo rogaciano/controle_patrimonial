@@ -1,0 +1,28 @@
+<div class="glass dark:glass-dark rounded-xl p-4 mb-6">
+    <form method="GET" action="{% url 'patrimonio:veiculo-list' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <input type="text" name="busca" value="{{ request.GET.busca }}"
+                   placeholder="Placa, marca, RENAVAM..."
+                   class="form-input w-full">
+        </div>
+        <div>
+            <select name="combustivel" class="form-input w-full">
+                <option value="">Todos combustíveis</option>
+                {% for value, label in filter.filters.combustivel.extra.choices %}
+                <option value="{{ value }}" {% if request.GET.combustivel == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <select name="status" class="form-input w-full" multiple>
+                {% for value, label in filter.filters.status.extra.choices %}
+                <option value="{{ value }}" {% if value in request.GET.status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="btn-primary">Filtrar</button>
+            <a href="{% url 'patrimonio:veiculo-list' %}" class="btn-ghost-secondary">Limpar</a>
+        </div>
+    </form>
+</div>

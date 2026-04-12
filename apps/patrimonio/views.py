@@ -40,23 +40,28 @@ from auditlog.models import LogEntry
 from .filters import (
     AtivoFilter,
     CentroCustoFilter,
+    ImovelFilter,
     InventarioFilter,
     InventarioItemFilter,
     LocalFisicoFilter,
     MovimentacaoFilter,
     ResponsavelFilter,
+    VeiculoFilter,
 )
 from .forms import (
     AtivoForm,
     AtivoImagemForm,
     CategoriaContabilForm,
     CentroCustoForm,
+    ImovelForm,
     InventarioForm,
     InventarioItemEvidenciaForm,
     LocalFisicoForm,
     MotivoBaixaForm,
     MovimentacaoForm,
     ResponsavelForm,
+    SituacaoImovelForm,
+    VeiculoForm,
 )
 from .models import (
     Ativo,
@@ -64,6 +69,7 @@ from .models import (
     CategoriaContabil,
     CentroCusto,
     DepreciacaoRegistro,
+    Imovel,
     Inventario,
     InventarioItem,
     InventarioItemEvidencia,
@@ -71,6 +77,8 @@ from .models import (
     MotivoBaixa,
     Movimentacao,
     Responsavel,
+    SituacaoImovel,
+    Veiculo,
 )
 from . import services
 
@@ -1498,3 +1506,202 @@ class ProcessarDepreciacaoView(LoginRequiredMixin, TemplateView):
             messages.error(request, f'Erro ao processar depreciação: {e}')
 
         return redirect('patrimonio:dashboard')
+
+
+# =============================================================================
+# IMÓVEIS — CRUD
+# =============================================================================
+
+
+class ImovelListView(LoginRequiredMixin, FilterView):
+    """Listagem de imóveis com filtros e paginação."""
+
+    model = Imovel
+    template_name = 'patrimonio/imovel_list.html'
+    context_object_name = 'itens'
+    paginate_by = 20
+    filterset_class = ImovelFilter
+
+    def get_queryset(self):
+        return (
+            Imovel.objects.filter(ativo=True)
+            .select_related('categoria', 'centro_custo', 'local_fisico', 'responsavel')
+            .prefetch_related('situacoes')
+            .order_by('-criado_em')
+        )
+
+
+class ImovelCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    """Cadastro de novo imóvel."""
+
+    model = Imovel
+    form_class = ImovelForm
+    template_name = 'patrimonio/imovel_form.html'
+    success_url = reverse_lazy('patrimonio:imovel-list')
+    success_message = 'Imóvel cadastrado com sucesso!'
+
+    @transaction.atomic
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except Exception as e:
+            logger.error('Erro ao criar imóvel: %s', e)
+            messages.error(self.request, f'Erro ao criar imóvel: {e}')
+            return self.form_invalid(form)
+
+
+class ImovelDetailView(LoginRequiredMixin, DetailView):
+    """Detalhes do imóvel com histórico de situações."""
+
+    model = Imovel
+    template_name = 'patrimonio/imovel_detail.html'
+    context_object_name = 'imovel'
+
+    def get_queryset(self):
+        return Imovel.objects.select_related(
+            'categoria', 'centro_custo', 'local_fisico', 'responsavel'
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        imovel = self.object
+        ctx['situacoes'] = imovel.situacoes.filter(ativo=True).order_by('-data_inicio')
+        ctx['situacao_atual'] = imovel.situacao_atual
+        ctx['situacao_form'] = SituacaoImovelForm()
+        ctx['depreciacoes'] = imovel.depreciacoes.filter(
+            cenario='FISCAL'
+        ).order_by('-ano_referencia', '-mes_referencia')[:12]
+        ctx['movimentacoes'] = imovel.movimentacoes.select_related(
+            'local_origem', 'local_destino',
+            'responsavel_anterior', 'responsavel_novo',
+        ).order_by('-data_movimentacao')[:10]
+        return ctx
+
+
+class ImovelUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    """Edição de imóvel existente."""
+
+    model = Imovel
+    form_class = ImovelForm
+    template_name = 'patrimonio/imovel_form.html'
+    success_url = reverse_lazy('patrimonio:imovel-list')
+    success_message = 'Imóvel atualizado com sucesso!'
+
+
+class ImovelDeleteView(LoginRequiredMixin, DeleteView):
+    """Exclusão (soft delete) de imóvel."""
+
+    model = Imovel
+    success_url = reverse_lazy('patrimonio:imovel-list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, 'Imóvel removido com sucesso.')
+        return redirect(self.success_url)
+
+
+class SituacaoImovelCreateView(LoginRequiredMixin, View):
+    """Registrar nova situação/ocorrência para um imóvel."""
+
+    def post(self, request, pk):
+        imovel = get_object_or_404(Imovel, pk=pk)
+        form = SituacaoImovelForm(request.POST)
+        if form.is_valid():
+            situacao = form.save(commit=False)
+            situacao.imovel = imovel
+            situacao.registrado_por = request.user
+            situacao.save()
+            messages.success(request, 'Situação registrada com sucesso!')
+        else:
+            messages.error(request, 'Erro ao registrar situação. Verifique os campos.')
+        return redirect('patrimonio:imovel-detail', pk=pk)
+
+
+# =============================================================================
+# VEÍCULOS — CRUD
+# =============================================================================
+
+
+class VeiculoListView(LoginRequiredMixin, FilterView):
+    """Listagem de veículos com filtros e paginação."""
+
+    model = Veiculo
+    template_name = 'patrimonio/veiculo_list.html'
+    context_object_name = 'itens'
+    paginate_by = 20
+    filterset_class = VeiculoFilter
+
+    def get_queryset(self):
+        return (
+            Veiculo.objects.filter(ativo=True)
+            .select_related('categoria', 'centro_custo', 'local_fisico', 'responsavel')
+            .order_by('-criado_em')
+        )
+
+
+class VeiculoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    """Cadastro de novo veículo."""
+
+    model = Veiculo
+    form_class = VeiculoForm
+    template_name = 'patrimonio/veiculo_form.html'
+    success_url = reverse_lazy('patrimonio:veiculo-list')
+    success_message = 'Veículo cadastrado com sucesso!'
+
+    @transaction.atomic
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except Exception as e:
+            logger.error('Erro ao criar veículo: %s', e)
+            messages.error(self.request, f'Erro ao criar veículo: {e}')
+            return self.form_invalid(form)
+
+
+class VeiculoDetailView(LoginRequiredMixin, DetailView):
+    """Detalhes do veículo."""
+
+    model = Veiculo
+    template_name = 'patrimonio/veiculo_detail.html'
+    context_object_name = 'veiculo'
+
+    def get_queryset(self):
+        return Veiculo.objects.select_related(
+            'categoria', 'centro_custo', 'local_fisico', 'responsavel'
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        veiculo = self.object
+        ctx['depreciacoes'] = veiculo.depreciacoes.filter(
+            cenario='FISCAL'
+        ).order_by('-ano_referencia', '-mes_referencia')[:12]
+        ctx['movimentacoes'] = veiculo.movimentacoes.select_related(
+            'local_origem', 'local_destino',
+            'responsavel_anterior', 'responsavel_novo',
+        ).order_by('-data_movimentacao')[:10]
+        return ctx
+
+
+class VeiculoUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    """Edição de veículo existente."""
+
+    model = Veiculo
+    form_class = VeiculoForm
+    template_name = 'patrimonio/veiculo_form.html'
+    success_url = reverse_lazy('patrimonio:veiculo-list')
+    success_message = 'Veículo atualizado com sucesso!'
+
+
+class VeiculoDeleteView(LoginRequiredMixin, DeleteView):
+    """Exclusão (soft delete) de veículo."""
+
+    model = Veiculo
+    success_url = reverse_lazy('patrimonio:veiculo-list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        messages.success(request, 'Veículo removido com sucesso.')
+        return redirect(self.success_url)

@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ imovel.numero_tombamento }} - Imóvel - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">🏢 {{ imovel.get_tipo_imovel_display }} — {{ imovel.descricao_detalhada|truncatechars:40 }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Tombamento: {{ imovel.numero_tombamento }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'patrimonio:imovel-update' imovel.pk %}" class="btn-ghost-secondary">✏️ Editar</a>
+            <a href="{% url 'patrimonio:imovel-list' %}" class="btn-ghost-secondary">← Voltar</a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
+
+    {# Situação Atual — Banner #}
+    {% if situacao_atual %}
+    <div class="rounded-xl p-4 border
+        {% if situacao_atual.situacao == 'DISPONIVEL' %}border-emerald-200 bg-emerald-50/80 dark:border-emerald-800 dark:bg-emerald-900/20
+        {% elif situacao_atual.situacao == 'ALUGADO' %}border-blue-200 bg-blue-50/80 dark:border-blue-800 dark:bg-blue-900/20
+        {% elif situacao_atual.situacao == 'FECHADO' %}border-red-200 bg-red-50/80 dark:border-red-800 dark:bg-red-900/20
+        {% elif situacao_atual.situacao == 'EM_REFORMA' %}border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-900/20
+        {% else %}border-slate-200 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-800/50{% endif %}">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs font-medium uppercase tracking-wider
+                    {% if situacao_atual.situacao == 'DISPONIVEL' %}text-emerald-600 dark:text-emerald-400
+                    {% elif situacao_atual.situacao == 'ALUGADO' %}text-blue-600 dark:text-blue-400
+                    {% elif situacao_atual.situacao == 'FECHADO' %}text-red-600 dark:text-red-400
+                    {% elif situacao_atual.situacao == 'EM_REFORMA' %}text-amber-600 dark:text-amber-400
+                    {% else %}text-slate-600 dark:text-slate-400{% endif %}">Situação Atual</span>
+                <p class="text-lg font-bold mt-0.5
+                    {% if situacao_atual.situacao == 'DISPONIVEL' %}text-emerald-800 dark:text-emerald-300
+                    {% elif situacao_atual.situacao == 'ALUGADO' %}text-blue-800 dark:text-blue-300
+                    {% elif situacao_atual.situacao == 'FECHADO' %}text-red-800 dark:text-red-300
+                    {% elif situacao_atual.situacao == 'EM_REFORMA' %}text-amber-800 dark:text-amber-300
+                    {% else %}text-slate-800 dark:text-slate-200{% endif %}">{{ situacao_atual.get_situacao_display }}</p>
+            </div>
+            <div class="text-right text-sm text-slate-600 dark:text-slate-400">
+                <p>Desde {{ situacao_atual.data_inicio|date:"d/m/Y" }}</p>
+                {% if situacao_atual.data_fim %}<p>Até {{ situacao_atual.data_fim|date:"d/m/Y" }}</p>{% endif %}
+            </div>
+        </div>
+        {% if situacao_atual.observacoes %}
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ situacao_atual.observacoes }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Dados do Imóvel #}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dados do Imóvel</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tipo</dt>
+                <dd class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{{ imovel.get_tipo_imovel_display }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Área Total</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{% if imovel.area_total_m2 %}{{ imovel.area_total_m2|floatformat:2 }} m²{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Matrícula/Registro</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ imovel.matricula_registro|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cartório</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ imovel.cartorio|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nº IPTU</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ imovel.numero_iptu|default:"—" }}</dd>
+            </div>
+        </div>
+        {% if imovel.endereco_completo %}
+        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Endereço</dt>
+            <dd class="mt-1 text-sm text-slate-700 dark:text-slate-300">{{ imovel.endereco_completo }}</dd>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Dados Patrimoniais #}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dados Patrimoniais</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tombamento</dt>
+                <dd class="mt-1 text-sm font-mono font-semibold text-slate-900 dark:text-white">{{ imovel.numero_tombamento }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</dt>
+                <dd class="mt-1">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if imovel.status == 'ATIVO' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400
+                        {% elif imovel.status == 'EM_MANUTENCAO' %}bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400
+                        {% elif imovel.status == 'BAIXADO' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                        {% else %}bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300{% endif %}">
+                        {{ imovel.get_status_display }}
+                    </span>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data Aquisição</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ imovel.data_aquisicao|date:"d/m/Y" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Valor Aquisição</dt>
+                <dd class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">R$ {{ imovel.valor_aquisicao|floatformat:2 }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Valor Contábil</dt>
+                <dd class="mt-1 text-sm font-semibold text-primary-600 dark:text-primary-400">R$ {{ imovel.valor_contabil_atual|floatformat:2 }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Responsável</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ imovel.responsavel }}</dd>
+            </div>
+        </div>
+        {% if imovel.observacoes %}
+        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Observações</dt>
+            <dd class="mt-1 text-sm text-slate-700 dark:text-slate-300">{{ imovel.observacoes }}</dd>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Registrar nova situação #}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Registrar Nova Situação</h3>
+        <form method="POST" action="{% url 'patrimonio:imovel-situacao-create' imovel.pk %}">
+            {% csrf_token %}
+            {% load widget_tweaks %}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Situação <span class="text-red-500">*</span></label>
+                    {% render_field situacao_form.situacao %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Início <span class="text-red-500">*</span></label>
+                    {% render_field situacao_form.data_inicio class="form-input" %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    {% render_field situacao_form.data_fim class="form-input" %}
+                </div>
+                <div class="form-group flex items-end">
+                    <button type="submit" class="btn-primary w-full">Registrar</button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <label class="form-label">Observações</label>
+                {% render_field situacao_form.observacoes class="form-input" rows="2" placeholder="Detalhes da situação..." %}
+            </div>
+        </form>
+    </div>
+
+    {# Histórico de Situações #}
+    {% if situacoes %}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Histórico de Situações</h3>
+        <div class="space-y-3">
+            {% for sit in situacoes %}
+            <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                <div class="flex-shrink-0 w-2 h-2 mt-2 rounded-full
+                    {% if sit.situacao == 'DISPONIVEL' %}bg-emerald-500
+                    {% elif sit.situacao == 'ALUGADO' %}bg-blue-500
+                    {% elif sit.situacao == 'FECHADO' %}bg-red-500
+                    {% elif sit.situacao == 'EM_REFORMA' %}bg-amber-500
+                    {% elif sit.situacao == 'CEDIDO' %}bg-indigo-500
+                    {% else %}bg-slate-400{% endif %}"></div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white">{{ sit.get_situacao_display }}</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                            {{ sit.data_inicio|date:"d/m/Y" }}{% if sit.data_fim %} — {{ sit.data_fim|date:"d/m/Y" }}{% endif %}
+                        </span>
+                    </div>
+                    {% if sit.observacoes %}
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-0.5">{{ sit.observacoes }}</p>
+                    {% endif %}
+                    {% if sit.registrado_por %}
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">por {{ sit.registrado_por }} em {{ sit.criado_em|date:"d/m/Y H:i" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

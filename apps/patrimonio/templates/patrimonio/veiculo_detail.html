@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ veiculo.placa }} - Veículo - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">🚗 {{ veiculo.placa }} — {{ veiculo.marca_modelo }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Tombamento: {{ veiculo.numero_tombamento }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'patrimonio:veiculo-update' veiculo.pk %}" class="btn-ghost-secondary">
+                ✏️ Editar
+            </a>
+            <a href="{% url 'patrimonio:veiculo-list' %}" class="btn-ghost-secondary">
+                ← Voltar
+            </a>
+        </div>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 space-y-6">
+
+    {# Dados do Veículo #}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dados do Veículo</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Placa</dt>
+                <dd class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{{ veiculo.placa }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Marca/Modelo</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.marca_modelo }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Combustível</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.get_combustivel_display }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">RENAVAM</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.renavam|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Chassi</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.chassi|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Cor</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.cor|default:"—" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ano Fab./Modelo</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">
+                    {{ veiculo.ano_fabricacao|default:"—" }} / {{ veiculo.ano_modelo|default:"—" }}
+                </dd>
+            </div>
+        </div>
+    </div>
+
+    {# Dados Patrimoniais (herdados do Ativo) #}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Dados Patrimoniais</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tombamento</dt>
+                <dd class="mt-1 text-sm font-mono font-semibold text-slate-900 dark:text-white">{{ veiculo.numero_tombamento }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</dt>
+                <dd class="mt-1">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if veiculo.status == 'ATIVO' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400
+                        {% elif veiculo.status == 'EM_MANUTENCAO' %}bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400
+                        {% elif veiculo.status == 'BAIXADO' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                        {% else %}bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300{% endif %}">
+                        {{ veiculo.get_status_display }}
+                    </span>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Conservação</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.get_estado_conservacao_display }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Data Aquisição</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.data_aquisicao|date:"d/m/Y" }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Valor Aquisição</dt>
+                <dd class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">R$ {{ veiculo.valor_aquisicao|floatformat:2 }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Valor Contábil</dt>
+                <dd class="mt-1 text-sm font-semibold text-primary-600 dark:text-primary-400">R$ {{ veiculo.valor_contabil_atual|floatformat:2 }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Categoria</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.categoria }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Responsável</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.responsavel }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Local Físico</dt>
+                <dd class="mt-1 text-sm text-slate-900 dark:text-white">{{ veiculo.local_fisico }}</dd>
+            </div>
+        </div>
+        {% if veiculo.descricao_detalhada %}
+        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Descrição</dt>
+            <dd class="mt-1 text-sm text-slate-700 dark:text-slate-300">{{ veiculo.descricao_detalhada }}</dd>
+        </div>
+        {% endif %}
+        {% if veiculo.observacoes %}
+        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Observações</dt>
+            <dd class="mt-1 text-sm text-slate-700 dark:text-slate-300">{{ veiculo.observacoes }}</dd>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Movimentações #}
+    {% if movimentacoes %}
+    <div class="card">
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Últimas Movimentações</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Data</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Origem → Destino</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    {% for mov in movimentacoes %}
+                    <tr>
+                        <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">{{ mov.data_movimentacao|date:"d/m/Y" }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{{ mov.local_origem }} → {{ mov.local_destino }}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                {% if mov.status == 'CONCLUIDA' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400
+                                {% elif mov.status == 'CANCELADA' %}bg-red-100 text-red-800
+                                {% else %}bg-amber-100 text-amber-800{% endif %}">
+                                {{ mov.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% load widget_tweaks %}
+
+{# Dados do Veículo #}
+<fieldset class="mb-6">
+    <legend class="text-base font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        🚗 Dados do Veículo
+    </legend>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="form-group">
+            <label class="form-label">Placa <span class="text-red-500">*</span></label>
+            {% render_field form.placa class="form-input" placeholder="ABC1D23" %}
+            {% for error in form.placa.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Marca/Modelo <span class="text-red-500">*</span></label>
+            {% render_field form.marca_modelo class="form-input" placeholder="Ex: Fiat Uno" %}
+            {% for error in form.marca_modelo.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Combustível</label>
+            {% render_field form.combustivel %}
+            {% for error in form.combustivel.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">RENAVAM</label>
+            {% render_field form.renavam class="form-input" %}
+            {% for error in form.renavam.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Chassi</label>
+            {% render_field form.chassi class="form-input" %}
+            {% for error in form.chassi.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Cor</label>
+            {% render_field form.cor class="form-input" %}
+            {% for error in form.cor.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Ano Fabricação</label>
+            {% render_field form.ano_fabricacao class="form-input" %}
+            {% for error in form.ano_fabricacao.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Ano Modelo</label>
+            {% render_field form.ano_modelo class="form-input" %}
+            {% for error in form.ano_modelo.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+</fieldset>
+
+{# Dados Patrimoniais #}
+<fieldset class="mb-6">
+    <legend class="text-base font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        📋 Dados Patrimoniais
+    </legend>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="form-group">
+            <label class="form-label">Empresa <span class="text-red-500">*</span></label>
+            {% render_field form.empresa %}
+            {% for error in form.empresa.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Nº Tombamento <span class="text-red-500">*</span></label>
+            {% render_field form.numero_tombamento class="form-input" %}
+            {% for error in form.numero_tombamento.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Categoria <span class="text-red-500">*</span></label>
+            {% render_field form.categoria %}
+            {% for error in form.categoria.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Centro de Custo <span class="text-red-500">*</span></label>
+            {% render_field form.centro_custo %}
+            {% for error in form.centro_custo.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Local Físico <span class="text-red-500">*</span></label>
+            {% render_field form.local_fisico %}
+            {% for error in form.local_fisico.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Responsável <span class="text-red-500">*</span></label>
+            {% render_field form.responsavel %}
+            {% for error in form.responsavel.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div class="form-group">
+            <label class="form-label">Data Aquisição <span class="text-red-500">*</span></label>
+            {% render_field form.data_aquisicao class="form-input" %}
+            {% for error in form.data_aquisicao.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Valor Aquisição (R$) <span class="text-red-500">*</span></label>
+            {% render_field form.valor_aquisicao class="form-input" %}
+            {% for error in form.valor_aquisicao.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Valor Residual (R$)</label>
+            {% render_field form.valor_residual class="form-input" %}
+            {% for error in form.valor_residual.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Vida Útil (meses) <span class="text-red-500">*</span></label>
+            {% render_field form.vida_util_meses class="form-input" %}
+            {% for error in form.vida_util_meses.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Estado de Conservação</label>
+            {% render_field form.estado_conservacao %}
+            {% for error in form.estado_conservacao.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group flex items-end">
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+                {% render_field form.depreciavel %}
+                <span class="text-sm text-slate-700 dark:text-slate-300">Depreciável</span>
+            </label>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div class="form-group">
+            <label class="form-label">Nota Fiscal</label>
+            {% render_field form.nota_fiscal class="form-input" %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Fornecedor</label>
+            {% render_field form.fornecedor class="form-input" %}
+        </div>
+    </div>
+    <div class="grid grid-cols-1 gap-4 mt-4">
+        <div class="form-group">
+            <label class="form-label">Descrição Detalhada <span class="text-red-500">*</span></label>
+            {% render_field form.descricao_detalhada class="form-input" rows="3" %}
+            {% for error in form.descricao_detalhada.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Observações</label>
+            {% render_field form.observacoes class="form-input" rows="2" %}
+        </div>
+    </div>
+</fieldset>

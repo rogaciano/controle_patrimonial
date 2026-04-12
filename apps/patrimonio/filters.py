@@ -8,11 +8,14 @@ from .models import (
     Ativo,
     CategoriaContabil,
     CentroCusto,
+    Imovel,
     Inventario,
     InventarioItem,
     LocalFisico,
     Movimentacao,
     Responsavel,
+    SituacaoImovel,
+    Veiculo,
 )
 
 
@@ -299,3 +302,94 @@ class InventarioItemFilter(django_filters.FilterSet):
             | models.Q(ativo__descricao_detalhada__icontains=value)
             | models.Q(observacoes__icontains=value)
         )
+
+
+# =============================================================================
+# IMÓVEL
+# =============================================================================
+
+
+class ImovelFilter(django_filters.FilterSet):
+    """Filtros para listagem de imóveis."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelMultipleChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+    )
+    tipo_imovel = django_filters.ChoiceFilter(
+        choices=Imovel.TipoImovel.choices,
+        label='Tipo de Imóvel',
+        null_label='Todos',
+    )
+    status = django_filters.MultipleChoiceFilter(
+        choices=Ativo.Status.choices,
+        label='Status',
+    )
+    estado_conservacao = django_filters.ChoiceFilter(
+        choices=Ativo.EstadoConservacao.choices,
+        label='Estado de Conservação',
+        null_label='Todos',
+    )
+
+    class Meta:
+        model = Imovel
+        fields = ['busca', 'empresa', 'tipo_imovel', 'status', 'estado_conservacao']
+
+    def filtrar_busca(self, queryset, name, value):
+        return queryset.filter(
+            models.Q(numero_tombamento__icontains=value)
+            | models.Q(descricao_detalhada__icontains=value)
+            | models.Q(endereco_completo__icontains=value)
+            | models.Q(matricula_registro__icontains=value)
+            | models.Q(numero_iptu__icontains=value)
+        )
+
+
+# =============================================================================
+# VEÍCULO
+# =============================================================================
+
+
+class VeiculoFilter(django_filters.FilterSet):
+    """Filtros para listagem de veículos."""
+
+    busca = django_filters.CharFilter(
+        method='filtrar_busca',
+        label='Buscar',
+    )
+    empresa = django_filters.ModelMultipleChoiceFilter(
+        queryset=Empresa.objects.filter(ativo=True),
+        label='Empresa',
+    )
+    combustivel = django_filters.ChoiceFilter(
+        choices=Veiculo.TipoCombustivel.choices,
+        label='Combustível',
+        null_label='Todos',
+    )
+    status = django_filters.MultipleChoiceFilter(
+        choices=Ativo.Status.choices,
+        label='Status',
+    )
+    estado_conservacao = django_filters.ChoiceFilter(
+        choices=Ativo.EstadoConservacao.choices,
+        label='Estado de Conservação',
+        null_label='Todos',
+    )
+
+    class Meta:
+        model = Veiculo
+        fields = ['busca', 'empresa', 'combustivel', 'status', 'estado_conservacao']
+
+    def filtrar_busca(self, queryset, name, value):
+        return queryset.filter(
+            models.Q(numero_tombamento__icontains=value)
+            | models.Q(placa__icontains=value)
+            | models.Q(marca_modelo__icontains=value)
+            | models.Q(renavam__icontains=value)
+            | models.Q(chassi__icontains=value)
+        )
+

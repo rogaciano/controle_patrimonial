@@ -25,8 +25,18 @@
                     </a>
                     <a href="{% url 'patrimonio:ativo-list' %}"
                         class="px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                        {% if 'ativo' in url_name %}nav-link-active{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                        {% if 'ativo' in url_name and 'imovel' not in url_name and 'veiculo' not in url_name %}nav-link-active{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
                         Ativos
+                    </a>
+                    <a href="{% url 'patrimonio:imovel-list' %}"
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        {% if 'imovel' in url_name %}nav-link-active{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                        🏢 Imóveis
+                    </a>
+                    <a href="{% url 'patrimonio:veiculo-list' %}"
+                        class="px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        {% if 'veiculo' in url_name %}nav-link-active{% else %}text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                        🚗 Veículos
                     </a>
                     <a href="{% url 'patrimonio:movimentacao-list' %}"
                         class="px-3 py-2 rounded-lg text-sm font-medium transition-colors
@@ -140,8 +150,18 @@
             </a>
             <a href="{% url 'patrimonio:ativo-list' %}"
                 class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                {% if 'ativo' in url_name %}nav-link-active{% else %}text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                {% if 'ativo' in url_name and 'imovel' not in url_name and 'veiculo' not in url_name %}nav-link-active{% else %}text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
                 Ativos
+            </a>
+            <a href="{% url 'patrimonio:imovel-list' %}"
+                class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                {% if 'imovel' in url_name %}nav-link-active{% else %}text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                🏢 Imóveis
+            </a>
+            <a href="{% url 'patrimonio:veiculo-list' %}"
+                class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                {% if 'veiculo' in url_name %}nav-link-active{% else %}text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800{% endif %}">
+                🚗 Veículos
             </a>
             <a href="{% url 'patrimonio:movimentacao-list' %}"
                 class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors

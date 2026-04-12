@@ -8,6 +8,7 @@ from .models import (
     CategoriaContabil,
     CentroCusto,
     DepreciacaoRegistro,
+    Imovel,
     Inventario,
     InventarioItem,
     InventarioItemEvidencia,
@@ -16,6 +17,8 @@ from .models import (
     MotivoBaixa,
     Movimentacao,
     Responsavel,
+    SituacaoImovel,
+    Veiculo,
 )
 
 
@@ -215,3 +218,54 @@ class MotivoBaixaAdmin(admin.ModelAdmin):
     search_fields = ['ativo__numero_tombamento', 'justificativa']
     raw_id_fields = ['ativo']
     readonly_fields = ['criado_em']
+
+
+# =============================================================================
+# IMÓVEL
+# =============================================================================
+
+
+class SituacaoImovelInline(admin.TabularInline):
+    model = SituacaoImovel
+    extra = 0
+    fields = ['situacao', 'data_inicio', 'data_fim', 'observacoes', 'registrado_por']
+    readonly_fields = ['criado_em']
+
+
+@admin.register(Imovel)
+class ImovelAdmin(admin.ModelAdmin):
+    list_display = [
+        'numero_tombamento', 'tipo_imovel', 'descricao_detalhada',
+        'area_total_m2', 'status', 'valor_aquisicao', 'ativo',
+    ]
+    list_filter = ['tipo_imovel', 'status', 'estado_conservacao', 'ativo']
+    search_fields = ['numero_tombamento', 'descricao_detalhada', 'endereco_completo', 'matricula_registro']
+    raw_id_fields = ['categoria', 'centro_custo', 'local_fisico', 'responsavel']
+    readonly_fields = ['criado_em', 'atualizado_em']
+    inlines = [SituacaoImovelInline]
+
+
+@admin.register(SituacaoImovel)
+class SituacaoImovelAdmin(admin.ModelAdmin):
+    list_display = ['imovel', 'situacao', 'data_inicio', 'data_fim', 'registrado_por']
+    list_filter = ['situacao']
+    search_fields = ['imovel__numero_tombamento', 'observacoes']
+    raw_id_fields = ['imovel']
+
+
+# =============================================================================
+# VEÍCULO
+# =============================================================================
+
+
+@admin.register(Veiculo)
+class VeiculoAdmin(admin.ModelAdmin):
+    list_display = [
+        'placa', 'marca_modelo', 'ano_fabricacao', 'ano_modelo',
+        'combustivel', 'status', 'valor_aquisicao', 'ativo',
+    ]
+    list_filter = ['combustivel', 'status', 'estado_conservacao', 'ativo']
+    search_fields = ['placa', 'marca_modelo', 'renavam', 'chassi', 'numero_tombamento']
+    raw_id_fields = ['categoria', 'centro_custo', 'local_fisico', 'responsavel']
+    readonly_fields = ['criado_em', 'atualizado_em']
+

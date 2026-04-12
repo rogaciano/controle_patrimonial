@@ -66,4 +66,20 @@ urlpatterns = [
 
     # --- Depreciação ---
     path('depreciacao/processar/', views.ProcessarDepreciacaoView.as_view(), name='depreciacao-processar'),
+
+    # --- Imóveis ---
+    path('imoveis/', views.ImovelListView.as_view(), name='imovel-list'),
+    path('imoveis/novo/', views.ImovelCreateView.as_view(), name='imovel-create'),
+    path('imoveis/<int:pk>/', views.ImovelDetailView.as_view(), name='imovel-detail'),
+    path('imoveis/<int:pk>/editar/', views.ImovelUpdateView.as_view(), name='imovel-update'),
+    path('imoveis/<int:pk>/excluir/', views.ImovelDeleteView.as_view(), name='imovel-delete'),
+    path('imoveis/<int:pk>/situacao/', views.SituacaoImovelCreateView.as_view(), name='imovel-situacao-create'),
+
+    # --- Veículos ---
+    path('veiculos/', views.VeiculoListView.as_view(), name='veiculo-list'),
+    path('veiculos/novo/', views.VeiculoCreateView.as_view(), name='veiculo-create'),
+    path('veiculos/<int:pk>/', views.VeiculoDetailView.as_view(), name='veiculo-detail'),
+    path('veiculos/<int:pk>/editar/', views.VeiculoUpdateView.as_view(), name='veiculo-update'),
+    path('veiculos/<int:pk>/excluir/', views.VeiculoDeleteView.as_view(), name='veiculo-delete'),
 ]
+

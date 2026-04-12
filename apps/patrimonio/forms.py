@@ -8,6 +8,7 @@ from .models import (
     AtivoImagem,
     CategoriaContabil,
     CentroCusto,
+    Imovel,
     Inventario,
     InventarioItem,
     InventarioItemEvidencia,
@@ -16,6 +17,8 @@ from .models import (
     MotivoBaixa,
     Movimentacao,
     Responsavel,
+    SituacaoImovel,
+    Veiculo,
 )
 
 
@@ -210,3 +213,94 @@ class AtivoImagemForm(_BaseForm):
     class Meta:
         model = AtivoImagem
         fields = ['imagem', 'descricao', 'tipo', 'principal']
+
+
+# =============================================================================
+# IMÓVEL
+# =============================================================================
+
+
+class ImovelForm(_BaseForm):
+    class Meta:
+        model = Imovel
+        fields = [
+            'empresa', 'numero_tombamento', 'descricao_detalhada', 'categoria',
+            'centro_custo', 'local_fisico', 'responsavel',
+            'data_aquisicao', 'valor_aquisicao', 'valor_residual',
+            'vida_util_meses', 'estado_conservacao',
+            'depreciavel', 'nota_fiscal', 'fornecedor', 'observacoes',
+            'foto',
+            # Campos específicos de imóvel
+            'tipo_imovel', 'matricula_registro', 'cartorio',
+            'area_total_m2', 'endereco_completo', 'numero_iptu',
+        ]
+        widgets = {
+            'data_aquisicao': forms.DateInput(
+                attrs={'type': 'date'},
+                format='%Y-%m-%d',
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['numero_tombamento'].widget.attrs['readonly'] = True
+            self.fields['numero_tombamento'].widget.attrs['class'] += (
+                ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
+            )
+
+
+class SituacaoImovelForm(_BaseForm):
+    class Meta:
+        model = SituacaoImovel
+        fields = ['situacao', 'data_inicio', 'data_fim', 'observacoes']
+        widgets = {
+            'data_inicio': forms.DateInput(
+                attrs={'type': 'date'},
+                format='%Y-%m-%d',
+            ),
+            'data_fim': forms.DateInput(
+                attrs={'type': 'date'},
+                format='%Y-%m-%d',
+            ),
+        }
+
+
+# =============================================================================
+# VEÍCULO
+# =============================================================================
+
+
+class VeiculoForm(_BaseForm):
+    class Meta:
+        model = Veiculo
+        fields = [
+            'empresa', 'numero_tombamento', 'descricao_detalhada', 'categoria',
+            'centro_custo', 'local_fisico', 'responsavel',
+            'data_aquisicao', 'valor_aquisicao', 'valor_residual',
+            'vida_util_meses', 'estado_conservacao',
+            'depreciavel', 'nota_fiscal', 'fornecedor', 'observacoes',
+            'foto',
+            # Campos específicos de veículo
+            'placa', 'renavam', 'chassi', 'marca_modelo',
+            'ano_fabricacao', 'ano_modelo', 'cor', 'combustivel',
+        ]
+        widgets = {
+            'data_aquisicao': forms.DateInput(
+                attrs={'type': 'date'},
+                format='%Y-%m-%d',
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['numero_tombamento'].widget.attrs['readonly'] = True
+            self.fields['numero_tombamento'].widget.attrs['class'] += (
+                ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
+            )
+            self.fields['placa'].widget.attrs['readonly'] = True
+            self.fields['placa'].widget.attrs['class'] += (
+                ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
+            )
+

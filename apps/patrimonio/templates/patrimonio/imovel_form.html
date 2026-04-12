@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}{% if object %}Editar{% else %}Novo{% endif %} Imóvel - Controle Patrimonial{% endblock %}
+
+{% block header %}
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">
+                🏢 {% if object %}Editar Imóvel: {{ object.numero_tombamento }}{% else %}Novo Imóvel{% endif %}
+            </h2>
+        </div>
+        <a href="{% url 'patrimonio:imovel-list' %}" class="btn-ghost-secondary">← Voltar</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <form method="POST" class="card">
+        {% csrf_token %}
+        {% if form.errors %}
+        <div class="border-l-4 border-red-500 bg-red-50/80 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl mb-6">
+            <p class="font-semibold">Por favor, corrija os erros abaixo:</p>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                {% for field, errors in form.errors.items %}{% for error in errors %}<li>{{ field|title }}: {{ error }}</li>{% endfor %}{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% include 'patrimonio/partials/_imovel_form_fields.html' %}
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <a href="{% url 'patrimonio:imovel-list' %}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {% if object %}Salvar Alterações{% else %}Cadastrar Imóvel{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

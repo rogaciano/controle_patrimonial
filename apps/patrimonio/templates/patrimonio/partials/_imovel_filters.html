@@ -1,0 +1,28 @@
+<div class="glass dark:glass-dark rounded-xl p-4 mb-6">
+    <form method="GET" action="{% url 'patrimonio:imovel-list' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <input type="text" name="busca" value="{{ request.GET.busca }}"
+                   placeholder="Tombamento, endereço, IPTU..."
+                   class="form-input w-full">
+        </div>
+        <div>
+            <select name="tipo_imovel" class="form-input w-full">
+                <option value="">Todos os tipos</option>
+                {% for value, label in filter.filters.tipo_imovel.extra.choices %}
+                <option value="{{ value }}" {% if request.GET.tipo_imovel == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <select name="status" class="form-input w-full" multiple>
+                {% for value, label in filter.filters.status.extra.choices %}
+                <option value="{{ value }}" {% if value in request.GET.status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex items-end gap-2">
+            <button type="submit" class="btn-primary">Filtrar</button>
+            <a href="{% url 'patrimonio:imovel-list' %}" class="btn-ghost-secondary">Limpar</a>
+        </div>
+    </form>
+</div>
