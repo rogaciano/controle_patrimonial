@@ -1,0 +1,16 @@
+[Unit]
+Description=gunicorn daemon for sertamol patrimonial
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/var/www/sertamol_patrimonial
+ExecStart=/var/www/sertamol_patrimonial/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind 0.0.0.0:8012 \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

@@ -3,15 +3,23 @@ Django settings - Base configuration.
 Controle Patrimonial - Sistema de Gestão de Ativos.
 """
 
+import environ
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = 'django-insecure-change-me-in-production-patrimonial-2026'
+env = environ.Env(
+    DEBUG=(bool, True),
+    SECRET_KEY=(str, 'django-insecure-change-me-in-production-patrimonial-2026')
+)
+# Take environment variables from .env file
+environ.Env.read_env(BASE_DIR / '.env')
 
-DEBUG = True
+SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'localhost', '127.0.0.1']
+DEBUG = env('DEBUG')
+
+ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'sertamol.gestorpatrimonial.com.br', 'localhost', '127.0.0.1']
 
 # --- Apps ---
 INSTALLED_APPS = [
@@ -72,10 +80,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # --- Database ---
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db('DATABASE_URL', default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
 
 # --- Password validation ---

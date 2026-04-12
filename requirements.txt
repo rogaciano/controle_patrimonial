@@ -6,3 +6,5 @@ django-widget-tweaks
 django-vite
 gunicorn
 Pillow
+psycopg2-binary
+django-environ
