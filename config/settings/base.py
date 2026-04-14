@@ -19,7 +19,7 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'sertamol.gestorpatrimonial.com.br', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'sertamol.gestorpatrimonial.com.br', 'jamoto.gestorpatrimonial.com.br', 'localhost', '127.0.0.1']
 
 # --- Apps ---
 INSTALLED_APPS = [
