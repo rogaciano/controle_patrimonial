@@ -10,8 +10,11 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models, transaction
+from django.db.models import IntegerField, Max
+from django.db.models.functions import Cast, Substr
 from django.urls import reverse
+from django.utils import timezone
 
 from auditlog.registry import auditlog
 
@@ -235,6 +238,8 @@ class Responsavel(BaseModel):
 class Ativo(BaseModel):
     """Bem patrimonial — entidade central do sistema."""
 
+    _TOMBAMENTO_REGEX = r'^[A-Za-z0-9]{3}-\d{2}-\d{6}$'
+
     class TipoAtivo(models.TextChoices):
         EQUIPAMENTO = 'EQUIPAMENTO', 'Móvel/Equipamento'
         IMOVEL = 'IMOVEL', 'Imóvel'
@@ -388,7 +393,50 @@ class Ativo(BaseModel):
             except Ativo.DoesNotExist:
                 pass
 
+    @classmethod
+    def _proximo_sequencial_tombamento(cls) -> int:
+        max_seq = (
+            cls.objects.filter(numero_tombamento__regex=cls._TOMBAMENTO_REGEX)
+            .annotate(
+                _seq=Cast(
+                    Substr('numero_tombamento', 8, 6),
+                    output_field=IntegerField(),
+                )
+            )
+            .aggregate(Max('_seq'))
+            .get('_seq__max')
+        )
+        return (max_seq or 0) + 1
+
+    def _gerar_numero_tombamento(self) -> str:
+        codigo = (self.categoria.codigo or '').strip().upper()
+        codigo = ''.join(ch for ch in codigo if ch.isalnum())
+        if len(codigo) >= 3:
+            prefixo = codigo[:3]
+        else:
+            prefixo = codigo.rjust(3, '0')
+
+        ano = timezone.localdate().year % 100
+        sequencial = self._proximo_sequencial_tombamento()
+        return f'{prefixo}-{ano:02d}-{sequencial:06d}'
+
     def save(self, *args, **kwargs) -> None:
+        if not self.pk and not (self.numero_tombamento or '').strip():
+            tentativas = 5
+            last_error = None
+            for _ in range(tentativas):
+                with transaction.atomic():
+                    self.numero_tombamento = self._gerar_numero_tombamento()
+                    self.full_clean()
+                    try:
+                        super().save(*args, **kwargs)
+                        return
+                    except IntegrityError as e:
+                        last_error = e
+                        self.numero_tombamento = ''
+                        continue
+            raise last_error
+
         self.full_clean()
         super().save(*args, **kwargs)
 

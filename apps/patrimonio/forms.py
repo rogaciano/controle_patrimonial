@@ -119,11 +119,16 @@ class AtivoForm(_BaseForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Tombamento readonly em edição
         if self.instance.pk:
             self.fields['numero_tombamento'].widget.attrs['readonly'] = True
             self.fields['numero_tombamento'].widget.attrs['class'] += (
                 ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
+            )
+        else:
+            self.fields['numero_tombamento'].required = False
+            self.fields['numero_tombamento'].widget.attrs.setdefault(
+                'placeholder',
+                'Deixe em branco para gerar automaticamente',
             )
 
 
@@ -248,6 +253,12 @@ class ImovelForm(_BaseForm):
             self.fields['numero_tombamento'].widget.attrs['class'] += (
                 ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
             )
+        else:
+            self.fields['numero_tombamento'].required = False
+            self.fields['numero_tombamento'].widget.attrs.setdefault(
+                'placeholder',
+                'Deixe em branco para gerar automaticamente',
+            )
 
 
 class SituacaoImovelForm(_BaseForm):
@@ -302,5 +313,11 @@ class VeiculoForm(_BaseForm):
             self.fields['placa'].widget.attrs['readonly'] = True
             self.fields['placa'].widget.attrs['class'] += (
                 ' bg-gray-100 dark:bg-slate-700 cursor-not-allowed'
+            )
+        else:
+            self.fields['numero_tombamento'].required = False
+            self.fields['numero_tombamento'].widget.attrs.setdefault(
+                'placeholder',
+                'Deixe em branco para gerar automaticamente',
             )
 

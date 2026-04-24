@@ -48,7 +48,7 @@ pip install -r requirements.txt
 > 2. Cole os seguintes comandos e insira uma senha forte onde estiver `SUA_SENHA_AQUI`:
 > ```sql
 > CREATE DATABASE jamoto_db;
-> CREATE USER jamoto_user WITH PASSWORD 'SUA_SENHA_AQUI';
+> CREATE USER jamoto_user WITH PASSWORD '*Marien2012';
 > ALTER ROLE jamoto_user SET client_encoding TO 'utf8';
 > ALTER ROLE jamoto_user SET default_transaction_isolation TO 'read committed';
 > ALTER ROLE jamoto_user SET timezone TO 'America/Sao_Paulo';

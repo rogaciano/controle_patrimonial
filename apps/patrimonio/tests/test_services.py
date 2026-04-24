@@ -13,6 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.patrimonio.models import (
     Ativo,
@@ -124,6 +125,15 @@ class TestAtivoModel(_TestDataMixin, TestCase):
         self._criar_ativo(numero_tombamento='TOMB-UNICO')
         with self.assertRaises(Exception):
             self._criar_ativo(numero_tombamento='TOMB-UNICO')
+
+    def test_tombamento_gerado_automaticamente_quando_vazio(self):
+        ano = timezone.localdate().year % 100
+
+        ativo1 = self._criar_ativo(numero_tombamento='')
+        self.assertEqual(ativo1.numero_tombamento, f'CAT-{ano:02d}-000001')
+
+        ativo2 = self._criar_ativo(numero_tombamento='')
+        self.assertEqual(ativo2.numero_tombamento, f'CAT-{ano:02d}-000002')
 
     def test_soft_delete(self):
         """Soft delete desativa sem remover."""
@@ -466,6 +476,7 @@ class TestAtivoStatusViews(_TestDataMixin, TestCase):
 
     def _payload_update(self, descricao):
         return {
+            'empresa': self.ativo.empresa_id,
             'numero_tombamento': self.ativo.numero_tombamento,
             'descricao_detalhada': descricao,
             'categoria': self.ativo.categoria_id,
@@ -755,6 +766,7 @@ class TestAuditoriaAtivoViews(_TestDataMixin, TestCase):
 
     def _payload_update(self, descricao):
         return {
+            'empresa': self.ativo.empresa_id,
             'numero_tombamento': self.ativo.numero_tombamento,
             'descricao_detalhada': descricao,
             'categoria': self.ativo.categoria_id,
