@@ -16,7 +16,7 @@
             </div>
             <div>
                 <label class="form-label">Nº Tombamento <span class="text-red-500">*</span></label>
-                {% render_field form.numero_tombamento class="form-input" placeholder="Ex: TOMB00001" %}
+                {% render_field form.numero_tombamento class="form-input" placeholder="Ex: XXX-AA-999999 (ou deixe em branco)" %}
                 {% for error in form.numero_tombamento.errors %}
                 <p class="form-error">{{ error }}</p>
                 {% endfor %}
