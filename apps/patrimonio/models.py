@@ -416,7 +416,7 @@ class Ativo(BaseModel):
         else:
             prefixo = codigo.rjust(3, '0')
 
-        ano = timezone.localdate().year % 100
+        ano = self.data_aquisicao.year % 100
         sequencial = self._proximo_sequencial_tombamento()
         return f'{prefixo}-{ano:02d}-{sequencial:06d}'
 
