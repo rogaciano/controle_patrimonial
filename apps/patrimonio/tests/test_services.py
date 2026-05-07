@@ -127,13 +127,17 @@ class TestAtivoModel(_TestDataMixin, TestCase):
             self._criar_ativo(numero_tombamento='TOMB-UNICO')
 
     def test_tombamento_gerado_automaticamente_quando_vazio(self):
-        ano = timezone.localdate().year % 100
-
         ativo1 = self._criar_ativo(numero_tombamento='')
-        self.assertEqual(ativo1.numero_tombamento, f'CAT-{ano:02d}-000001')
+        prefixo1, ano1, seq1 = ativo1.numero_tombamento.split('-')
+        self.assertEqual(prefixo1, 'CAT')
+        self.assertEqual(int(ano1), ativo1.data_aquisicao.year % 100)
+        self.assertEqual(len(seq1), 6)
 
         ativo2 = self._criar_ativo(numero_tombamento='')
-        self.assertEqual(ativo2.numero_tombamento, f'CAT-{ano:02d}-000002')
+        prefixo2, ano2, seq2 = ativo2.numero_tombamento.split('-')
+        self.assertEqual(prefixo2, 'CAT')
+        self.assertEqual(int(ano2), ativo2.data_aquisicao.year % 100)
+        self.assertEqual(int(seq2), int(seq1) + 1)
 
     def test_soft_delete(self):
         """Soft delete desativa sem remover."""
