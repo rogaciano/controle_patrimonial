@@ -13,6 +13,9 @@
         </div>
         <div class="flex items-center gap-2">
             {% if inventario.status == 'ABERTO' %}
+            <a href="{% url 'patrimonio:inventario-update' inventario.pk %}" class="btn-secondary btn-sm">Editar</a>
+            {% endif %}
+            {% if inventario.status == 'ABERTO' %}
             <form method="POST" action="{% url 'patrimonio:inventario-gerar-snapshot' inventario.pk %}" class="inline">
                 {% csrf_token %}
                 <button type="submit" class="btn-secondary btn-sm">Gerar Snapshot</button>

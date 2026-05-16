@@ -520,7 +520,26 @@ class AtivoListView(LoginRequiredMixin, FilterView):
         )
 
 
-class AtivoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+
+class CloneAtivoMixin:
+    def get_initial(self):
+        initial = super().get_initial()
+        clone_id = self.request.GET.get('clone')
+        if clone_id:
+            try:
+                obj = self.model.objects.get(pk=clone_id)
+                for field in obj._meta.fields:
+                    if field.primary_key or field.name.endswith('_ptr') or field.name in ['numero_tombamento', 'criado_em', 'atualizado_em', 'id']:
+                        continue
+                    initial[field.name] = getattr(obj, field.attname)
+                
+                from django.utils import timezone
+                initial['data_aquisicao'] = timezone.now().date()
+            except self.model.DoesNotExist:
+                pass
+        return initial
+
+class AtivoCreateView(LoginRequiredMixin, SuccessMessageMixin, CloneAtivoMixin, CreateView):
     """Cadastro de novo ativo."""
 
     model = Ativo
@@ -1339,6 +1358,23 @@ class InventarioCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     success_message = 'Inventário criado com sucesso!'
 
 
+class InventarioUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Inventario
+    form_class = InventarioForm
+    template_name = 'patrimonio/inventario_form.html'
+    success_message = 'Inventário atualizado com sucesso!'
+
+    def dispatch(self, request, *args, **kwargs):
+        inv = self.get_object()
+        if inv.status != Inventario.StatusInventario.ABERTO:
+            messages.error(request, 'Só é possível editar inventários com status ABERTO.')
+            return redirect('patrimonio:inventario-detail', pk=inv.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('patrimonio:inventario-detail', kwargs={'pk': self.object.pk})
+
+
 class InventarioDetailView(LoginRequiredMixin, DetailView):
     model = Inventario
     template_name = 'patrimonio/inventario_detail.html'
@@ -1531,7 +1567,7 @@ class ImovelListView(LoginRequiredMixin, FilterView):
         )
 
 
-class ImovelCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class ImovelCreateView(LoginRequiredMixin, SuccessMessageMixin, CloneAtivoMixin, CreateView):
     """Cadastro de novo imóvel."""
 
     model = Imovel
@@ -1640,7 +1676,7 @@ class VeiculoListView(LoginRequiredMixin, FilterView):
         )
 
 
-class VeiculoCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class VeiculoCreateView(LoginRequiredMixin, SuccessMessageMixin, CloneAtivoMixin, CreateView):
     """Cadastro de novo veículo."""
 
     model = Veiculo

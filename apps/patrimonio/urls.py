@@ -58,6 +58,7 @@ urlpatterns = [
     path('inventarios/', views.InventarioListView.as_view(), name='inventario-list'),
     path('inventarios/novo/', views.InventarioCreateView.as_view(), name='inventario-create'),
     path('inventarios/<int:pk>/', views.InventarioDetailView.as_view(), name='inventario-detail'),
+    path('inventarios/<int:pk>/editar/', views.InventarioUpdateView.as_view(), name='inventario-update'),
     path('inventarios/<int:pk>/gerar-snapshot/', views.InventarioGerarSnapshotView.as_view(), name='inventario-gerar-snapshot'),
     path('inventarios/item/<int:pk>/toggle/', views.InventarioItemToggleView.as_view(), name='inventario-item-toggle'),
     path('inventarios/item/<int:pk>/evidencias/', views.InventarioItemEvidenciaListView.as_view(), name='inventario-item-evidencias'),

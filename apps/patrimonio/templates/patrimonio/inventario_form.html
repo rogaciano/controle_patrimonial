@@ -1,13 +1,17 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}Novo Inventário - Controle Patrimonial{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar Inventário{% else %}Novo Inventário{% endif %} - Controle Patrimonial{% endblock %}
 
 {% block header %}
 <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
     <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        <h2 class="text-xl font-bold text-slate-900 dark:text-white">Novo Inventário</h2>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">{% if form.instance.pk %}Editar Inventário{% else %}Novo Inventário{% endif %}</h2>
+        {% if form.instance.pk %}
+        <a href="{% url 'patrimonio:inventario-detail' form.instance.pk %}" class="btn-ghost-secondary">← Voltar</a>
+        {% else %}
         <a href="{% url 'patrimonio:inventario-list' %}" class="btn-ghost-secondary">← Voltar</a>
+        {% endif %}
     </div>
 </header>
 {% endblock %}
@@ -57,8 +61,13 @@
         </div>
 
         <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            {% if form.instance.pk %}
+            <a href="{% url 'patrimonio:inventario-detail' form.instance.pk %}" class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary">Salvar</button>
+            {% else %}
             <a href="{% url 'patrimonio:inventario-list' %}" class="btn-secondary">Cancelar</a>
             <button type="submit" class="btn-primary">Criar Inventário</button>
+            {% endif %}
         </div>
     </form>
 </div>
