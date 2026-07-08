@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  db_sertamol:
+    image: postgres:15
+    container_name: sertamol
+    environment:
+      POSTGRES_USER: sertamol_user
+      POSTGRES_PASSWORD: sertamol_pass
+      POSTGRES_DB: sertamol_db
+    ports:
+      - "5433:5432" # Acesso via porta 5433
+    restart: unless-stopped
+
+  db_jamoto:
+    image: postgres:15
+    container_name: jamoto
+    environment:
+      POSTGRES_USER: jamoto_user
+      POSTGRES_PASSWORD: jamoto_pass
+      POSTGRES_DB: jamoto_db
+    ports:
+      - "5434:5432" # Acesso via porta 5434
+    restart: unless-stopped

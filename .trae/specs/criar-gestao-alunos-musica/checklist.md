@@ -1,0 +1,10 @@
+- [x] Existe um novo projeto em `e:\projetos\alan-correia-aulas\` com front e back e setup local documentado (`.env.example`).
+- [x] PostgreSQL está configurado e o esquema cobre: usuários, alunos, vídeos, planos, itens ordenados, vínculo aluno-plano, logs de consumo e campos financeiros (mensalidade/vencimento/status).
+- [x] Login por email + senha funciona para ADMIN e STUDENT e as permissões bloqueiam acessos indevidos.
+- [x] Admin consegue criar/editar/listar/inativar alunos e o aluno consegue autenticar com as credenciais.
+- [x] Show do aluno exibe tempo desde data de início, status financeiro (em dia/em atraso) e histórico de vídeos assistidos.
+- [x] Admin consegue fazer upload de vídeo (salvo em disco) e o acesso ao vídeo é protegido por autenticação.
+- [x] Admin consegue criar plano de estudos, ordenar vídeos e atribuir um plano a um aluno.
+- [x] Aluno consegue ver o plano atribuído, assistir vídeos na ordem e registrar progresso/assistido.
+- [x] Dashboard do admin exibe: alunos que assistiram hoje, vídeos cadastrados (total), alunos ativos, alunos em dia e alunos em atraso.
+- [x] Projeto possui validações mínimas (testes e smoke test) e um caminho claro de deploy para VPS Ubuntu (Postgres + storage em disco).

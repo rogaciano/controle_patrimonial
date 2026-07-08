@@ -6,7 +6,8 @@
     </div>
     <div class="flex space-x-1">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
+        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}"
+            class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
                       hover:bg-primary-50 dark:hover:bg-primary-900/20
                       text-sm transition-colors border border-slate-200 dark:border-slate-700">
             ← Anterior
@@ -15,7 +16,8 @@
         {% for num in page_obj.paginator.page_range %}
         {% if page_obj.number == num %}
         <span class="px-3 py-2 rounded-lg bg-primary-600 text-white text-sm">{{ num }}</span>
-        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %} <a href="?page={{ num }}" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %} <a
+            href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ num }}" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
                           hover:bg-primary-50 dark:hover:bg-primary-900/20
                           text-sm transition-colors border border-slate-200 dark:border-slate-700">
             {{ num }}
@@ -23,7 +25,8 @@
             {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
+            <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}"
+                class="px-3 py-2 rounded-lg bg-white dark:bg-slate-800
                       hover:bg-primary-50 dark:hover:bg-primary-900/20
                       text-sm transition-colors border border-slate-200 dark:border-slate-700">
                 Próximo →

@@ -1,2 +1,6 @@
 admin
 Senha@2026!
+
+está na máquina 
+django
+144.202.29.245
