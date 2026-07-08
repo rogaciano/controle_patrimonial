@@ -19,7 +19,32 @@ SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['patrimonio.sistema9.com.br', 'sertamol.gestorpatrimonial.com.br', 'jamoto.gestorpatrimonial.com.br', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = env.list(
+    'ALLOWED_HOSTS',
+    default=[
+        'patrimonio.sistema9.com.br',
+        'sertamol.gestorpatrimonial.com.br',
+        'jamoto.gestorpatrimonial.com.br',
+        'localhost',
+        '127.0.0.1',
+        '*.sistema9.com.br',
+        '*.gestorpatrimonial.com.br',
+    ],
+)
+
+CSRF_TRUSTED_ORIGINS = env.list(
+    'CSRF_TRUSTED_ORIGINS',
+    default=[
+        'https://patrimonio.sistema9.com.br',
+        'https://sertamol.gestorpatrimonial.com.br',
+        'https://jamoto.gestorpatrimonial.com.br',
+        'http://localhost',
+        'http://127.0.0.1',
+    ],
+)
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # --- Apps ---
 INSTALLED_APPS = [
